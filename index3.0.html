@@ -283,30 +283,9 @@
   }
   .nav-backdrop.show{display:block;}
 
-  .mobile-nav-header{
-    display:none;
-    align-items:center; justify-content:space-between;
-    position:fixed; top:0; left:0; right:0;
-    height:54px;
-    padding:0 10px 0 16px;
-    background:var(--pitch);
-    border-bottom:1px solid var(--card-line);
-    z-index:43;
-  }
-  .mobile-nav-header span{
-    font-weight:800; letter-spacing:.03em; text-transform:uppercase;
-    font-size:13px; color:var(--gold);
-  }
-  .mobile-nav-header button{
-    background:none; border:none; color:var(--chalk);
-    font-size:28px; line-height:1; cursor:pointer;
-    padding:6px 10px;
-  }
-  .mobile-nav-header.show{display:flex;}
-
   /* ----------------------------------------------------------------
-     Mobile layout (<=880px): single column, full-screen dropdown
-     team menu, tighter spacing, smaller type across the board.
+     Mobile layout (<=880px): single column, dropdown team menu,
+     tighter spacing, smaller type across the board.
   ---------------------------------------------------------------- */
   @media (max-width: 880px){
     header{padding:22px 18px 16px;}
@@ -324,15 +303,13 @@
     nav.teams.mobile-open{
       display:block;
       position:fixed;
-      top:54px; left:0; right:0; bottom:0;
-      z-index:42;
-      max-height:none;
-      height:calc(100vh - 54px);
-      height:calc(100dvh - 54px);
+      left:0; right:0;
+      z-index:40;
+      max-height:calc(100vh - 70px);
       overflow-y:auto;
       background:var(--pitch);
-      box-shadow:none;
-      padding:14px 8px 40px;
+      box-shadow:0 26px 50px rgba(0,0,0,.55);
+      padding:14px 8px 26px;
       -webkit-overflow-scrolling:touch;
     }
 
@@ -382,10 +359,6 @@
 </header>
 <div class="layout">
   <div class="nav-backdrop" id="navBackdrop"></div>
-  <div class="mobile-nav-header" id="mobileNavHeader">
-    <span>Equipos</span>
-    <button id="mobileNavClose" type="button" aria-label="Cerrar menú">&times;</button>
-  </div>
   <nav class="teams" id="teamNav"></nav>
   <main id="main"></main>
 </div>
@@ -1834,15 +1807,19 @@ renderTeam(currentTeam, "");
 // ---------------------------------------------------------------------
 const navToggle = document.getElementById('navToggle');
 const navBackdrop = document.getElementById('navBackdrop');
-const mobileNavHeader = document.getElementById('mobileNavHeader');
-const mobileNavClose = document.getElementById('mobileNavClose');
+
+function positionMobileNav(){
+  const headerEl = document.querySelector('header');
+  const rect = headerEl.getBoundingClientRect();
+  nav.style.top = Math.max(0, rect.bottom) + 'px';
+}
 
 function openMobileNav(){
+  positionMobileNav();
   nav.classList.add('mobile-open');
   navToggle.classList.add('open');
   navToggle.setAttribute('aria-expanded', 'true');
   navBackdrop.classList.add('show');
-  mobileNavHeader.classList.add('show');
   document.body.style.overflow = 'hidden';
 }
 
@@ -1851,7 +1828,6 @@ function closeMobileNav(){
   navToggle.classList.remove('open');
   navToggle.setAttribute('aria-expanded', 'false');
   navBackdrop.classList.remove('show');
-  mobileNavHeader.classList.remove('show');
   document.body.style.overflow = '';
 }
 
@@ -1864,10 +1840,8 @@ if(navToggle){
 if(navBackdrop){
   navBackdrop.addEventListener('click', closeMobileNav);
 }
-if(mobileNavClose){
-  mobileNavClose.addEventListener('click', closeMobileNav);
-}
 window.addEventListener('resize', ()=>{
+  if(nav.classList.contains('mobile-open')) positionMobileNav();
   if(window.innerWidth > 880) closeMobileNav();
 });
 

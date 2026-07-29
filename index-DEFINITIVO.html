@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KickStars Catálogo · Equipaciones LaLiga</title>
+<style>
+  :root{
+    --pitch:#0d1210;
+    --chalk:#f4f2ea;
+    --chalk-dim:#c9c7bd;
+    --gold:#d4a72c;
+    --gold-dim:#8a7025;
+    --card:#1a2420;
+    --card-line:#2a3630;
+    --pending:#232b27;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--pitch);
+    color:var(--chalk);
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    min-height:100vh;
+  }
+  .field-lines{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      repeating-linear-gradient(90deg, transparent, transparent 119px, rgba(244,242,234,0.02) 120px);
+    opacity:.6;
+  }
+  header{
+    position:relative; z-index:1;
+    padding:38px 32px 22px;
+    border-bottom:1px solid var(--card-line);
+  }
+  .eyebrow{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style:italic;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:var(--gold);
+    margin:0 0 10px;
+  }
+  h1{
+    margin:0;
+    font-size:clamp(30px,5vw,52px);
+    font-weight:800;
+    letter-spacing:-0.02em;
+    line-height:1.02;
+  }
+  h1 span{color:var(--gold);}
+  .sub{
+    max-width:640px;
+    color:var(--chalk-dim);
+    font-size:14.5px;
+    line-height:1.55;
+    margin-top:14px;
+  }
+  .search-wrap{
+    margin-top:20px;
+    max-width:420px;
+    position:relative;
+  }
+  .search-wrap svg{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    color:var(--gold-dim); pointer-events:none;
+  }
+  #searchInput{
+    width:100%;
+    background:var(--card);
+    border:1px solid var(--card-line);
+    color:var(--chalk);
+    font-size:13.5px;
+    padding:11px 14px 11px 38px;
+    border-radius:8px;
+    font-family:inherit;
+    outline:none;
+    transition:border-color .15s;
+  }
+  #searchInput::placeholder{color:var(--chalk-dim); opacity:.7;}
+  #searchInput:focus{border-color:var(--gold-dim);}
+  .search-count{
+    font-size:11px; color:var(--gold-dim); margin-top:6px; min-height:14px;
+  }
+
+  .layout{
+    position:relative; z-index:1;
+    display:grid;
+    grid-template-columns:260px 1fr;
+    gap:0;
+  }
+  nav.teams{
+    border-right:1px solid var(--card-line);
+    padding:18px 10px 22px;
+  }
+  .league-group{margin-bottom:6px;}
+  .league-head{
+    display:flex; align-items:center; gap:8px;
+    width:100%;
+    background:none; border:none; cursor:pointer;
+    color:var(--gold);
+    font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    padding:12px 10px 8px;
+    font-family:inherit;
+  }
+  .league-head .chev{
+    transition:transform .15s;
+    font-size:9px;
+    color:var(--gold-dim);
+  }
+  .league-head.collapsed .chev{transform:rotate(-90deg);}
+  .league-head .badge{
+    margin-left:auto; font-size:9px; letter-spacing:.05em; text-transform:none;
+    color:var(--chalk-dim); font-weight:400;
+    border:1px solid var(--card-line); padding:1px 6px; border-radius:4px;
+  }
+  .league-body{overflow:hidden;}
+  .league-body.collapsed{display:none;}
+
+  .team-btn{
+    display:flex; align-items:center; gap:10px;
+    width:100%;
+    background:none; border:none;
+    color:var(--chalk-dim);
+    font-size:14px;
+    text-align:left;
+    padding:9px 12px;
+    border-radius:7px;
+    cursor:pointer;
+    transition:background .15s, color .15s;
+    font-family:inherit;
+  }
+  .team-btn .num{
+    font-size:10px;
+    color:var(--gold-dim);
+    width:20px;
+    flex:none;
+  }
+  .team-btn:hover{background:rgba(212,167,44,0.08); color:var(--chalk);}
+  .team-btn.active{background:rgba(212,167,44,0.14); color:var(--chalk); font-weight:600;}
+  .team-btn.locked{opacity:.42; cursor:default;}
+  .team-btn.locked:hover{background:none; color:var(--chalk-dim);}
+  .team-btn.hidden{display:none;}
+  .lock-tag{
+    margin-left:auto; font-size:9.5px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--gold-dim);
+    border:1px solid var(--card-line); padding:2px 6px; border-radius:4px;
+  }
+  .no-match{
+    padding:12px; font-size:12px; color:var(--chalk-dim); font-style:italic;
+  }
+
+  main{padding:28px 34px 80px;}
+  .team-head{
+    display:flex; align-items:baseline; gap:16px; margin-bottom:6px;
+    flex-wrap:wrap;
+  }
+  .team-head h2{margin:0; font-size:26px; font-weight:800;}
+  .team-head .count{color:var(--gold); font-size:13px; font-family:Georgia, serif; font-style:italic;}
+
+  .view-toggle{
+    display:flex; gap:0; margin:14px 0 4px; border:1px solid var(--card-line);
+    border-radius:6px; overflow:hidden; width:fit-content;
+  }
+  .view-toggle button{
+    background:var(--card); color:var(--chalk-dim); border:none; cursor:pointer;
+    font-size:12px; font-weight:700; letter-spacing:.03em; padding:7px 16px;
+    font-family:inherit; border-right:1px solid var(--card-line);
+  }
+  .view-toggle button:last-child{border-right:none;}
+  .view-toggle button.active{background:var(--gold); color:#1a1a1a;}
+  .view-toggle button:hover:not(.active){background:var(--card-line);}
+
+  .season-block{margin-top:30px;}
+  .season-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:700; letter-spacing:.04em;
+    background:var(--card); border:1px solid var(--card-line);
+    padding:5px 12px; border-radius:5px;
+    margin-bottom:14px;
+  }
+  .season-tag .yr-badge{
+    background:var(--gold); color:#1a1a0a; font-size:10.5px; font-weight:800;
+    padding:1px 6px; border-radius:3px;
+  }
+  .kit-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(168px,1fr));
+    gap:14px;
+  }
+  .kit-card{
+    background:var(--card);
+    border:1px solid var(--card-line);
+    border-radius:10px;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:transform .15s, border-color .15s;
+  }
+  .kit-card:hover{transform:translateY(-3px); border-color:var(--gold-dim);}
+  .kit-photo{
+    aspect-ratio:3/3.6;
+    background:#0f1512;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .kit-photo img{width:100%; height:100%; object-fit:contain; padding:10px; background:#f4f2ea0d; cursor:zoom-in;}
+  .kit-photo.has-back{position:relative;}
+  .kit-photo.has-back img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:10px; transition:opacity .25s ease;}
+  .kit-photo.has-back img.front{opacity:1; z-index:2;}
+  .kit-photo.has-back img.back{opacity:0; z-index:1;}
+  .kit-photo.has-back:hover img.front{opacity:0;}
+  .kit-photo.has-back:hover img.back{opacity:1;}
+  .kit-label .flip-hint{font-size:9px; color:var(--gold-dim); margin-top:2px;}
+  .lightbox{
+    position:fixed; inset:0; background:rgba(6,9,7,0.92); z-index:50;
+    display:none; align-items:center; justify-content:center; padding:40px; cursor:zoom-out;
+  }
+  .lightbox.open{display:flex;}
+  .lightbox img{max-width:min(88vw,560px); max-height:86vh; object-fit:contain; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .lightbox .lb-cap{position:absolute; bottom:26px; left:0; right:0; text-align:center; color:var(--chalk-dim); font-size:13px;}
+  .lightbox .lb-close{position:absolute; top:22px; right:28px; color:var(--gold); font-size:26px; cursor:pointer; line-height:1;}
+  .kit-card.pending .kit-photo{background:var(--pending);}
+  .kit-photo .placeholder-icon{color:var(--card-line); font-size:11px; text-align:center; padding:14px; line-height:1.5;}
+  .kit-photo .placeholder-icon svg{opacity:.35; margin-bottom:6px;}
+  .kit-label{
+    padding:9px 11px 11px;
+    border-top:1px solid var(--card-line);
+  }
+  .kit-label .name{font-size:12.5px; font-weight:700; line-height:1.3;}
+  .kit-label .status{
+    font-size:10px; margin-top:4px; letter-spacing:.03em;
+    color:var(--gold-dim); text-transform:uppercase;
+  }
+  .kit-card.ready .kit-label .status{color:#7fae7a;}
+
+  .legend{
+    display:flex; gap:18px; margin:22px 0 4px;
+    font-size:11.5px; color:var(--chalk-dim);
+  }
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+  .dot.ready{background:#7fae7a;}
+  .dot.pending{background:var(--gold-dim);}
+
+  .empty-state{
+    max-width:520px; padding:60px 0; color:var(--chalk-dim); font-size:14px; line-height:1.6;
+  }
+  .empty-state b{color:var(--gold);}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--card-line); border-radius:4px;}
+
+  /* ----------------------------------------------------------------
+     Mobile dropdown toggle for the team menu (hidden on desktop)
+  ---------------------------------------------------------------- */
+  .nav-toggle{
+    display:none;
+    align-items:center; gap:9px;
+    width:100%;
+    margin-top:16px;
+    background:var(--card);
+    border:1px solid var(--card-line);
+    color:var(--chalk);
+    font-family:inherit;
+    font-size:13.5px; font-weight:700; letter-spacing:.02em;
+    padding:11px 14px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .nav-toggle svg{color:var(--gold); flex:none;}
+  .nav-toggle #navToggleLabel{flex:1; text-align:left;}
+  .nav-toggle .chev{color:var(--gold-dim); font-size:11px; transition:transform .18s;}
+  .nav-toggle.open .chev{transform:rotate(180deg);}
+  .nav-toggle:active{background:var(--card-line);}
+
+  .nav-backdrop{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(6,9,7,0.6);
+    z-index:39;
+  }
+  .nav-backdrop.show{display:block;}
+
+  /* ----------------------------------------------------------------
+     Mobile layout (<=880px): single column, dropdown team menu,
+     tighter spacing, smaller type across the board.
+  ---------------------------------------------------------------- */
+  @media (max-width: 880px){
+    header{padding:22px 18px 16px;}
+    .sub{font-size:13.5px;}
+    .search-wrap{max-width:100%;}
+    .nav-toggle{display:flex;}
+
+    .layout{grid-template-columns:1fr;}
+
+    nav.teams{
+      display:none;
+      border-right:none;
+      border-bottom:1px solid var(--card-line);
+    }
+    nav.teams.mobile-open{
+      display:block;
+      position:fixed;
+      left:0; right:0;
+      z-index:40;
+      max-height:calc(100vh - 70px);
+      overflow-y:auto;
+      background:var(--pitch);
+      box-shadow:0 26px 50px rgba(0,0,0,.55);
+      padding:14px 8px 26px;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    main{padding:20px 16px 60px;}
+    .team-head{gap:10px;}
+    .team-head h2{font-size:21px;}
+    .view-toggle button{padding:7px 12px; font-size:11.5px;}
+    .season-tag{font-size:12px; padding:5px 10px;}
+    .kit-grid{
+      grid-template-columns:repeat(auto-fill,minmax(126px,1fr));
+      gap:10px;
+    }
+    .kit-label .name{font-size:11.5px;}
+    .legend{gap:12px; flex-wrap:wrap; font-size:11px;}
+    .lightbox{padding:16px;}
+    .lightbox .lb-close{top:12px; right:16px; font-size:30px;}
+    .empty-state{padding:36px 0;}
+  }
+
+  @media (max-width: 480px){
+    h1{font-size:26px;}
+    .eyebrow{font-size:10px;}
+    .kit-grid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));}
+  }
+</style>
+</head>
+<body>
+<div class="field-lines"></div>
+<header>
+  <p class="eyebrow">Catálogo & Archivo Histórico</p>
+  <h1>KickStars <span>Catálogo</span></h1>
+  <p class="sub">Navegación por liga → equipo → temporada → equipación. Real Madrid, FC Barcelona y Atlético Madrid
+  ya están cargados con su histórico completo y varias fotos reales extraídas del archivo; el resto de clubes
+  de LaLiga esperan turno. Estructura preparada para sumar más ligas y selecciones nacionales más adelante.</p>
+
+  <div class="search-wrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="searchInput" type="text" placeholder="Buscar equipo, temporada o equipación…" autocomplete="off">
+  </div>
+  <div class="search-count" id="searchCount"></div>
+
+  <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="teamNav">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <span id="navToggleLabel">Ver equipos</span>
+    <span class="chev">▾</span>
+  </button>
+</header>
+<div class="layout">
+  <div class="nav-backdrop" id="navBackdrop"></div>
+  <nav class="teams" id="teamNav"></nav>
+  <main id="main"></main>
+</div>
+<div class="lightbox" id="lightbox">
+  <span class="lb-close">&times;</span>
+  <img id="lightboxImg" src="" alt="">
+  <div class="lb-cap" id="lightboxCap"></div>
+</div>
+
+<script>
+const REAL_IMG = "https://www.footballkitarchive.com";
+
+
+// ---------------------------------------------------------------------
+// FOTOS REALES DEL DRIVE (KickStars) - temporadas 2026-27 y 2025-26
+// ---------------------------------------------------------------------
+
+
+// ---------------------------------------------------------------------
+// REAL MADRID
+// ---------------------------------------------------------------------
+const realMadrid = [
+  {season:"2026-27", kits:[
+    {name:"1º Kit 26-27", img:"images/IMG_realMadrid_2627_Home.jpg"},
+    {name:"3º Kit 26-27", img:"images/IMG_realMadrid_2627_Third.jpg"}
+  ]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_realMadrid_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:"images/IMG_realMadrid_2526_Away.jpg"},
+    {name:"3º Kit 25-26", img:"images/IMG_realMadrid_2526_Third.jpg"}
+  ]},
+  {season:"2024-25", kits:[
+    {name:"1º Kit 24-25", img:"images/IMG_RM_2425_home.jpg"},
+    {name:"2º Kit 24-25", img:"images/IMG_RM_2425_away.jpg"},
+    {name:"3º Kit 24-25", img:"images/IMG_RM_2425_third.jpg"},
+    {name:"4º Kit 24-25", img:"images/IMG_RM_2425_fourth.jpg"}
+  ]},
+  {season:"2023-24", kits:[
+    {name:"1º Kit 23-24", img:null},
+    {name:"2º Kit 23-24", img:null},
+    {name:"3º Kit 23-24", img:null}
+  ]},
+  {season:"2022-23", kits:[
+    {name:"Retro 22/23", img:"images/IMG_RM_retro_12.jpg"}
+  ]},
+  {season:"2021-22", kits:[
+    {name:"1º Kit 21-22", img:"images/IMG_RM_retro_31.jpg"},
+    {name:"Final", img:"images/IMG_RM_retro_32.jpg"}
+  ]},
+  {season:"2020-21", kits:[
+    {name:"Retro 20/21", img:"images/IMG_RM_retro_5.jpg"}
+  ]},
+  {season:"2019-20", kits:[
+    {name:"1º Kit 19-20", img:"images/IMG_RM_1920_home.jpg"},
+    {name:"2º Kit 19-20", img:"images/IMG_RM_retro_17.jpg"}
+  ]},
+  {season:"2018-19", kits:[
+    {name:"Retro 18/19", img:"images/IMG_RM_retro_34.jpg"}
+  ]},
+  {season:"2017-18", kits:[
+    {name:"1º Kit 17-18", img:"images/IMG_RM_retro_23.jpg"}
+  ]},
+  {season:"2016-17", kits:[
+    {name:"1º Kit 16-17", img:"images/IMG_RM_retro_11.jpg"}
+  ]},
+  {season:"2015-16", kits:[
+    {name:"1º Kit 15-16", img:"images/IMG_RM_retro_20.jpg"}
+  ]},
+  {season:"2014-15", kits:[
+    {name:"Retro 14/15", img:"images/IMG_RM_retro_2.jpg"}
+  ]},
+  {season:"2013-14", kits:[
+    {name:"1º Kit 13-14", img:"images/IMG_RM_retro_1.jpg"}
+  ]},
+  {season:"2012-13", kits:[
+    {name:"1º Kit 12-13", img:"images/IMG_RM_retro_26.jpg"}
+  ]},
+  {season:"2011-12", kits:[
+    {name:"1º Kit 11-12", img:"images/IMG_RM_retro_13.jpg"},
+    {name:"2º Kit 11-12", img:"images/IMG_RM_1112_away.jpg"},
+    {name:"3º Kit 11-12", img:"images/IMG_RM_1112_third.jpg"},
+    {name:"Goalkeeper", img:"images/IMG_RM_retro_10.jpg"}
+  ]},
+  {season:"2010-11", kits:[
+    {name:"Retro 10/11", img:"images/IMG_RM_retro_15.jpg"}
+  ]},
+  {season:"2009-10", kits:[
+    {name:"Retro 09/10", img:"images/IMG_RM_retro_22.jpg"}
+  ]},
+  {season:"2008-09", kits:[
+    {name:"1º Kit 08-09", img:"images/IMG_RM_retro_16.jpg"}
+  ]},
+  {season:"2007-08", kits:[
+    {name:"1º Kit 07-08", img:"images/IMG_RM_retro_36.jpg"}
+  ]},
+  {season:"2006-07", kits:[
+    {name:"1º Kit 06-07", img:"images/IMG_RM_retro_8.jpg"}
+  ]},
+  {season:"2005-06", kits:[
+    {name:"Retro 05/06", img:"images/IMG_RM_retro_7.jpg"}
+  ]},
+  {season:"2004-05", kits:[
+    {name:"Retro 04/05", img:"images/IMG_RM_retro_24.jpg"}
+  ]},
+  {season:"2003-04", kits:[
+    {name:"1º Kit 03-04", img:"images/IMG_RM_retro_18.jpg"}
+  ]},
+  {season:"2002-03", kits:[
+    {name:"1º Kit 02-03", img:"images/IMG_RM_retro_33.jpg"},
+    {name:"UCL", img:"images/IMG_RM_retro_9.jpg"}
+  ]},
+  {season:"2001-02", kits:[
+    {name:"1º Kit 01-02", img:"images/IMG_RM_retro_14.jpg"}
+  ]},
+  {season:"1999-00", kits:[
+    {name:"1º Kit 99-00", img:"images/IMG_RM_retro_30.jpg"}
+  ]},
+  {season:"1998-00", kits:[
+    {name:"Retro 98/00", img:"images/IMG_RM_retro_29.jpg"}
+  ]},
+  {season:"1997-98", kits:[
+    {name:"1º Kit 97-98", img:"images/IMG_RM_retro_3.jpg"}
+  ]},
+  {season:"1997-99", kits:[
+    {name:"Retro 97/99", img:"images/IMG_RM_retro_4.jpg"}
+  ]},
+  {season:"1996-97", kits:[
+    {name:"1º Kit 96-97", img:"images/IMG_RM_retro_19.jpg"}
+  ]},
+  {season:"1994-96", kits:[
+    {name:"Retro 94/96", img:"images/IMG_RM_retro_21.jpg"}
+  ]},
+  {season:"1990-92", kits:[
+    {name:"Retro 90/92", img:"images/IMG_RM_retro_28.jpg"}
+  ]},
+  {season:"1989-90", kits:[
+    {name:"1º Kit 89-90", img:"images/IMG_RM_retro_27.jpg"}
+  ]},
+  {season:"1986-88", kits:[
+    {name:"Retro 86/88", img:"images/IMG_RM_retro_6.jpg"}
+  ]},
+  {season:"1984-85", kits:[
+    {name:"1º Kit 84-85", img:"images/IMG_RM_retro_25.jpg"}
+  ]},
+  {season:"Retro (anos sueltos)", kits:[
+    {name:"Retro 06", img:"images/IMG_RM_retro_35.jpg"},
+    {name:"Retro 00", img:"images/IMG_RM_retro_37.jpg"},
+    {name:"Retro 88", img:"images/IMG_RM_retro_38.jpg"}
+  ]},
+  {season:"Ediciones Especiales", kits:[
+    {name:"Edicion 39", img:"images/IMG_RM_special_39.jpg"},
+    {name:"Edicion 40", img:"images/IMG_RM_special_40.jpg"},
+    {name:"Edicion 41", img:"images/IMG_RM_special_41.jpg"},
+    {name:"Edicion 42", img:"images/IMG_RM_special_42.jpg"},
+    {name:"Y3 Orange", img:"images/IMG_RM_special_43.jpg"},
+    {name:"Edicion 44", img:"images/IMG_RM_special_44.jpg"},
+    {name:"Edicion 45", img:"images/IMG_RM_special_45.jpg"},
+    {name:"Edicion 46", img:"images/IMG_RM_special_46.jpg"},
+    {name:"Edicion 47", img:"images/IMG_RM_special_47.jpg"},
+    {name:"Edicion 48", img:"images/IMG_RM_special_48.jpg"},
+    {name:"Edicion 49", img:"images/IMG_RM_special_49.jpg"},
+    {name:"Edicion 50", img:"images/IMG_RM_special_50.jpg"},
+    {name:"Edicion 51", img:"images/IMG_RM_special_51.jpg"},
+    {name:"Edicion 52", img:"images/IMG_RM_special_52.jpg"},
+    {name:"Edicion 53", img:"images/IMG_RM_special_53.jpg"},
+    {name:"Edicion 54", img:"images/IMG_RM_special_54.jpg"},
+    {name:"Edicion 55", img:"images/IMG_RM_special_55.jpg"},
+    {name:"Edicion 56", img:"images/IMG_RM_special_56.jpg"},
+    {name:"Y3 Black", img:"images/IMG_RM_special_57.jpg"},
+    {name:"Edicion 58", img:"images/IMG_RM_special_58.jpg"},
+    {name:"Edicion 59", img:"images/IMG_RM_special_59.jpg"},
+    {name:"Edicion 60", img:"images/IMG_RM_special_60.jpg"},
+    {name:"Edicion 61", img:"images/IMG_RM_special_61.jpg"},
+    {name:"Balmain", img:"images/IMG_RM_special_62.jpg"},
+    {name:"Edicion 63", img:"images/IMG_RM_special_63.jpg"},
+    {name:"Edicion 64", img:"images/IMG_RM_special_64.jpg"},
+    {name:"Edicion 65", img:"images/IMG_RM_special_65.jpg"},
+    {name:"Edicion 66", img:"images/IMG_RM_special_66.jpg"},
+    {name:"Edicion 67", img:"images/IMG_RM_special_67.jpg"},
+    {name:"Edicion 68", img:"images/IMG_RM_special_68.jpg"},
+    {name:"Balmain", img:"images/IMG_RM_special_69.jpg"},
+    {name:"Edicion 70", img:"images/IMG_RM_special_70.jpg"},
+    {name:"Edicion 71", img:"images/IMG_RM_special_71.jpg"},
+    {name:"Edicion 72", img:"images/IMG_RM_special_72.jpg"},
+    {name:"Edicion 73", img:"images/IMG_RM_special_73.jpg"},
+    {name:"Edicion 74", img:"images/IMG_RM_special_74.jpg"},
+    {name:"Edicion 75", img:"images/IMG_RM_special_75.jpg"},
+    {name:"Edicion 76", img:"images/IMG_RM_special_76.jpg"},
+    {name:"Edicion 77", img:"images/IMG_RM_special_77.jpg"},
+    {name:"Y3 Purple", img:"images/IMG_RM_special_78.jpg"},
+    {name:"Edicion 79", img:"images/IMG_RM_special_79.jpg"},
+    {name:"Edicion 80", img:"images/IMG_RM_special_80.jpg"},
+    {name:"Balmain", img:"images/IMG_RM_special_81.jpg"}
+  ]},
+  {season:"Ediciones Player Special", kits:[
+    {name:"Edicion 82", img:"images/IMG_RM_player_82.jpg"},
+    {name:"Edicion 83", img:"images/IMG_RM_player_83.jpg"},
+    {name:"Edicion 84", img:"images/IMG_RM_player_84.jpg"},
+    {name:"Edicion 85", img:"images/IMG_RM_player_85.jpg"},
+    {name:"Edicion 86", img:"images/IMG_RM_player_86.jpg"},
+    {name:"Edicion 87", img:"images/IMG_RM_player_87.jpg"},
+    {name:"Edicion 88", img:"images/IMG_RM_player_88.jpg"},
+    {name:"Edicion 89", img:"images/IMG_RM_player_89.jpg"},
+    {name:"Edicion 90", img:"images/IMG_RM_player_90.jpg"},
+    {name:"Edicion 91", img:"images/IMG_RM_player_91.jpg"},
+    {name:"Gucci", img:"images/IMG_RM_player_92.jpg"},
+    {name:"Edicion 93", img:"images/IMG_RM_player_93.jpg"},
+    {name:"Edicion 94", img:"images/IMG_RM_player_94.jpg"},
+    {name:"Edicion 95", img:"images/IMG_RM_player_95.jpg"},
+    {name:"Edicion 96", img:"images/IMG_RM_player_96.jpg"},
+    {name:"Edicion 97", img:"images/IMG_RM_player_97.jpg"},
+    {name:"Edicion 98", img:"images/IMG_RM_player_98.jpg"},
+    {name:"Edicion 99", img:"images/IMG_RM_player_99.jpg"},
+    {name:"Edicion 100", img:"images/IMG_RM_player_100.jpg"},
+    {name:"Edicion 101", img:"images/IMG_RM_player_101.jpg"},
+    {name:"Edicion 102", img:"images/IMG_RM_player_102.jpg"},
+    {name:"Edicion 103", img:"images/IMG_RM_player_103.jpg"},
+    {name:"Edicion 104", img:"images/IMG_RM_player_104.jpg"},
+    {name:"Edicion 105", img:"images/IMG_RM_player_105.jpg"},
+    {name:"Edicion 106", img:"images/IMG_RM_player_106.jpg"},
+    {name:"Edicion 107", img:"images/IMG_RM_player_107.jpg"},
+    {name:"Edicion 108", img:"images/IMG_RM_player_108.jpg"}
+  ]},
+];
+
+// ---------------------------------------------------------------------
+// FC BARCELONA
+// ---------------------------------------------------------------------
+const barcelona = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_barcelona_2627_Home.jpg"},{name:"2º Kit 26-27", img:"images/IMG_barcelona_2627_Away.jpg"},{name:"3º Kit 26-27", img:"images/IMG_barcelona_2627_Third.jpg"}]},
+  {season:"2025-26", kits:[
+    
+    {name:"2º Kit 25-26", img:"images/IMG_barcelona_2526_Away.jpg"},
+    {name:"3º Kit 25-26", img:"images/IMG_barcelona_2526_Third.jpg"}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:"images/IMG_barca_retro_19.jpg"},{name:"2º Kit 20-21", img:"images/IMG_barca_retro_20.jpg"}]},
+  {season:"2018-19", kits:[{name:"Retro 18-19", img:"images/IMG_barca_retro_18.jpg"}]},
+  {season:"2017-18", kits:[{name:"Retro 17-18", img:"images/IMG_barca_retro_17.jpg"}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:"images/IMG_barca_retro_15.jpg"},{name:"2º Kit 16-17", img:"images/IMG_barca_retro_16.jpg"}]},
+  {season:"2015-16", kits:[{name:"Retro 15-16", img:"images/IMG_barca_retro_14.jpg"}]},
+  {season:"2014-15", kits:[{name:"Retro 14-15", img:"images/IMG_barca_retro_13.jpg"}]},
+  {season:"2013-14", kits:[{name:"1º Kit 13-14", img:"images/IMG_barca_retro_11.jpg"},{name:"2º Kit 13-14", img:"images/IMG_barca_retro_12.jpg"}]},
+  {season:"2011-12", kits:[{name:"Retro 11-12", img:"images/IMG_barca_retro_10.jpg"}]},
+  {season:"2006-07", kits:[{name:"Retro 06-07", img:"images/IMG_barca_retro_9.jpg"}]},
+  {season:"2004-05", kits:[{name:"1º Kit 04-05", img:"images/IMG_barca_retro_7.jpg"},{name:"2º Kit 04-05", img:"images/IMG_barca_retro_8.jpg"}]},
+  {season:"2003-04", kits:[{name:"Retro 03-04", img:"images/IMG_barca_retro_6.jpg"}]},
+  {season:"2002-03", kits:[{name:"Retro 02-03", img:"images/IMG_barca_retro_5.jpg"}]},
+  {season:"2001-02", kits:[{name:"Retro 01-02", img:"images/IMG_barca_retro_4.jpg"}]},
+  {season:"1998-99", kits:[{name:"Retro 98-99", img:"images/IMG_barca_retro_3.jpg"}]},
+  {season:"1997-98", kits:[{name:"Retro 97-98", img:"images/IMG_barca_retro_2.jpg"}]},
+  {season:"1996-97", kits:[{name:"Retro 96-97", img:"images/IMG_barca_retro_1.jpg"}]},
+  {season:"Retro (anos sueltos)", kits:[{name:"Retro 87-91", img:"images/IMG_barca_retro_21.jpg"},{name:"Retro 90-92", img:"images/IMG_barca_retro_22.jpg"}]},
+  {season:"Ediciones Especiales", kits:[{name:"Edición 1", img:"images/IMG_barca_special_1.jpg"},{name:"125 Aniversario", img:"images/IMG_barca_special_2.jpg"},{name:"Balmain", img:"images/IMG_barca_special_3.jpg"},{name:"Lamine Yamal", img:"images/IMG_barca_special_4.jpg"},{name:"Edición 2", img:"images/IMG_barca_special_5.jpg"},{name:"Edición 3", img:"images/IMG_barca_special_6.jpg"},{name:"Edición 4", img:"images/IMG_barca_special_7.jpg"},{name:"Edición 5", img:"images/IMG_barca_special_8.jpg"},{name:"Edición 6", img:"images/IMG_barca_special_9.jpg"},{name:"Edición 7", img:"images/IMG_barca_special_10.jpg"},{name:"Edición 8", img:"images/IMG_barca_special_11.jpg"},{name:"Edición 9", img:"images/IMG_barca_special_12.jpg"},{name:"Edición 10", img:"images/IMG_barca_special_13.jpg"},{name:"Edición 11", img:"images/IMG_barca_special_14.jpg"}]},
+  {season:"Ediciones Player Special", kits:[{name:"Lamine Yamal", img:"images/IMG_barca_player_1.jpg"},{name:"Edición 1", img:"images/IMG_barca_player_2.jpg"},{name:"Edición 2", img:"images/IMG_barca_player_3.jpg"},{name:"Edición 3", img:"images/IMG_barca_player_4.jpg"},{name:"Edición 4", img:"images/IMG_barca_player_5.jpg"}]},
+
+];
+
+// ---------------------------------------------------------------------
+// ATLÉTICO MADRID
+// ---------------------------------------------------------------------
+const atletico = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_atletico_2627_Home.jpg"},{name:"2º Kit 26-27", img:"images/IMG_atletico_2627_Away.jpg"},{name:"3º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_atletico_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:"images/IMG_atletico_2526_Away.jpg"},
+    {name:"3º Kit 25-26", img:"images/IMG_atletico_2526_Third.jpg"},{name:"Retro 25-26", img:null},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:"images/IMG_atletico_2425_Home.jpg"},{name:"2º Kit 24-25", img:"images/IMG_atletico_2425_Away.jpg"},{name:"3º Kit 24-25", img:"images/IMG_atletico_2425_Third.jpg"}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null},{name:"2º Kit 23-24", img:null},{name:"3º Kit 23-24", img:null},{name:"4º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null},{name:"2º Kit 22-23", img:null},{name:"3º Kit 22-23", img:null},{name:"Aniversario 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null},{name:"2º Kit 21-22", img:null},{name:"3º Kit 21-22", img:null},{name:"4º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null},{name:"2º Kit 20-21", img:null},{name:"3º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null},{name:"2º Kit 19-20", img:null},{name:"3º Kit 19-20", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:null},{name:"2º Kit 18-19", img:null},{name:"3º Kit 18-19", img:null},{name:"Supercopa UEFA 18-19", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null},{name:"2º Kit 17-18", img:null},{name:"3º Kit 17-18", img:null},{name:"Final Europa League 17-18", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:"images/IMG_atletico_retro_1617a.jpg"},{name:"2º Kit 16-17", img:"images/IMG_atletico_retro_1617b.jpg"}]},
+  {season:"2015-16", kits:[{name:"1º Kit 15-16", img:"images/IMG_atletico_retro_1516.jpg"},{name:"2º Kit 15-16", img:null},{name:"Final Champions 15-16", img:null}]},
+  {season:"2014-15", kits:[{name:"1º Kit 14-15", img:"images/IMG_atletico_retro_1415.jpg"}]},
+  {season:"2013-14", kits:[{name:"1º Kit 13-14", img:"images/IMG_atletico_retro_1314.jpg"},{name:"2º Kit 13-14", img:"images/IMG_atletico_retro_1314b.jpg"},{name:"Final Champions 13-14", img:"images/IMG_atletico_retro_1314c.jpg"}]},
+  {season:"2012-13", kits:[{name:"1º Kit 12-13", img:"images/IMG_atletico_retro_1213.jpg"},{name:"2º Kit 12-13", img:null},{name:"Final Copa del Rey 12-13", img:null},{name:"Supercopa UEFA 12-13", img:null}]},
+  {season:"2011-12", kits:[{name:"1º Kit 11-12", img:"images/IMG_atletico_retro_1112a.jpg"},{name:"2º Kit 11-12", img:"images/IMG_atletico_retro_1112b.jpg"},{name:"Final Europa League 11-12", img:null}]},
+  {season:"2010-11", kits:[{name:"1º Kit 10-11", img:"images/IMG_atletico_retro_1011.jpg"},{name:"2º Kit 10-11", img:null},{name:"Supercopa UEFA 10-11", img:null}]},
+  {season:"2009-10", kits:[{name:"1º Kit 09-10", img:null},{name:"2º Kit 09-10", img:null},{name:"Final Europa League 09-10", img:null}]},
+  {season:"2004-05", kits:[
+    {name:"1º Kit 04-05", img:"images/IMG_atletico_retro_0405a.jpg"},{name:"2º Kit 04-05", img:"images/IMG_atletico_retro_0405b.jpg"},
+    {name:"1º Kit V2 04-05 (Spiderman 2)", img:null},
+    {name:"Especial 04-05", img:null},
+  ]},
+  {season:"2003-04", kits:[{name:"1º Kit 03-04", img:"images/IMG_atletico_retro_0304a.jpg"},{name:"2º Kit 03-04", img:"images/IMG_atletico_retro_0304b.jpg"}]},
+  {season:"2002-03", kits:[{name:"1º Kit 02-03", img:"images/IMG_atletico_retro_0203a.jpg"},{name:"2º Kit 02-03", img:"images/IMG_atletico_retro_0203b.jpg"},{name:"3º Kit 02-03", img:"images/IMG_atletico_retro_0203c.jpg"},{name:"Centenario 02-03", img:"images/IMG_atletico_retro_0203d.jpg"}]},
+  {season:"2001-02", kits:[{name:"1º Kit 01-02", img:"images/IMG_atletico_retro_0102.jpg"}]},
+  {season:"1999-00", kits:[{name:"1º Kit 99-00", img:"images/IMG_atletico_retro_9900.jpg"},{name:"2º Kit 99-00", img:null},{name:"Final Copa del Rey 99-00", img:null}]},
+  {season:"1998-99", kits:[{name:"1º Kit 98-99", img:"images/IMG_atletico_retro_9899.jpg"},{name:"2º Kit 98-99", img:null}]},
+  {season:"1997-98", kits:[{name:"1º Kit 97-98", img:"images/IMG_atletico_retro_9798.jpg"},{name:"2º Kit 97-98", img:"images/IMG_atletico_retro_9798b.jpg"},{name:"3º Kit 97-98", img:null}]},
+  {season:"1996-97", kits:[{name:"1º Kit 96-97", img:"images/IMG_atletico_retro_9697a.jpg"},{name:"2º Kit 96-97", img:"images/IMG_atletico_retro_9697b.jpg"},{name:"3º Kit 96-97", img:"images/IMG_atletico_retro_9697c.jpg"}]},
+  {season:"1995-96", kits:[{name:"1º Kit 95-96", img:"images/IMG_atletico_retro_9596.jpg"},{name:"2º Kit 95-96", img:"images/IMG_atletico_retro_9596b.jpg"},{name:"Final Copa del Rey 95-96", img:null}]},
+  {season:"1994-95", kits:[{name:"1º Kit 94-95", img:"images/IMG_atletico_retro_9495.jpg"}]},
+  {season:"1993-94", kits:[{name:"1º Kit 93-94", img:null},{name:"2º Kit 93-94", img:null},{name:"UEFA Cup Local 93-94", img:null}]},
+  {season:"1990-91", kits:[{name:"1º Kit 90-91", img:"images/IMG_atletico_retro_9093.jpg"},{name:"2º Kit 90-91", img:null},{name:"3º Kit 90-91", img:null}]},
+  {season:"1985-86", kits:[{name:"1º Kit 85-86", img:null},{name:"2º Kit 85-86", img:null}]},
+  {season:"1982-83", kits:[{name:"1º Kit 82-83", img:"images/IMG_atletico_retro_8283.jpg"}]},
+  {season:"1979-80", kits:[{name:"1º Kit 79-80", img:null},{name:"2º Kit 79-80", img:null}]},
+  {season:"1974-75", kits:[{name:"1º Kit 74-75", img:null},{name:"1º Kit V2 74-75", img:null}]},
+  {season:"1962-63", kits:[{name:"1º Kit 62-63", img:null}]},
+  {season:"1955-56", kits:[{name:"1º Kit 55-56", img:null},{name:"2º Kit 55-56", img:null}]},
+  {season:"1928-29", kits:[{name:"1º Kit 28-29 (Athletic Club Madrid)", img:null},{name:"2º Kit 28-29 (Athletic Club Madrid)", img:null}]},
+  {season:"1903-04", kits:[{name:"1º Kit 03-04 (Athletic Club Madrid)", img:null}]},
+  {season:"Ediciones Especiales", kits:[{name:"Edición 1", img:"images/IMG_atletico_special_1.jpg"}]},
+];
+
+// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// RAYO VALLECANO
+// ---------------------------------------------------------------------
+const rayoVallecano = [
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_rayoVallecano_2526_Home.jpg"}, {name:"2º Kit 25-26", img:"images/IMG_rayoVallecano_2526_Away.jpg"}, {name:"3º Kit 25-26", img:"images/IMG_rayoVallecano_2526_Third.jpg"}, {name:"Final Conference League 25-26", img:null}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null}, {name:"2º Kit 24-25", img:null}, {name:"3º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}, {name:"2º Kit 23-24", img:null}, {name:"3º Kit 23-24", img:null}, {name:"Centenario 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null}, {name:"2º Kit 22-23", img:null}, {name:"3º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null}, {name:"2º Kit 21-22", img:null}, {name:"3º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}, {name:"2º Kit 20-21", img:null}, {name:"3º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null}, {name:"2º Kit 19-20", img:null}, {name:"3º Kit 19-20", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:null}, {name:"2º Kit 18-19", img:null}, {name:"3º Kit 18-19", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null}, {name:"2º Kit 17-18", img:null}, {name:"3º Kit 17-18", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:null}, {name:"2º Kit 16-17", img:null}, {name:"3º Kit 16-17", img:null}]},
+  {season:"2015-16", kits:[{name:"1º Kit 15-16", img:null}, {name:"2º Kit 15-16", img:null}, {name:"3º Kit 15-16", img:null}]},
+  {season:"2014-15", kits:[{name:"1º Kit 14-15", img:null}, {name:"2º Kit 14-15", img:null}, {name:"3º Kit 14-15", img:null}]},
+  {season:"2013-14", kits:[{name:"1º Kit 13-14", img:null}, {name:"2º Kit 13-14", img:null}, {name:"3º Kit 13-14", img:null}]},
+  {season:"2000-01", kits:[{name:"1º Kit 00-01", img:null}, {name:"2º Kit 00-01", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// RCD MALLORCA
+// ---------------------------------------------------------------------
+const mallorca = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:null}, {name:"2º Kit 26-27", img:null}, {name:"3º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_mallorca_2526_Home.jpg"}, {name:"2º Kit 25-26", img:"images/IMG_mallorca_2526_Away.jpg"}, {name:"3º Kit 25-26", img:"images/IMG_mallorca_2526_Third.jpg"}, {name:"Retro 25-26", img:null}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null}, {name:"2º Kit 24-25", img:null}, {name:"3º Kit 24-25", img:null}, {name:"Especial 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}, {name:"2º Kit 23-24", img:null}, {name:"3º Kit 23-24", img:null}, {name:"Final Copa del Rey 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null}, {name:"2º Kit 22-23", img:null}, {name:"3º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null}, {name:"2º Kit 21-22", img:null}, {name:"3º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}, {name:"2º Kit 20-21", img:null}, {name:"3º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null}, {name:"2º Kit 19-20", img:null}, {name:"3º Kit 19-20", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:null}, {name:"2º Kit 18-19", img:null}, {name:"3º Kit 18-19", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null}, {name:"2º Kit 17-18", img:null}, {name:"3º Kit 17-18", img:null}, {name:"4º Kit 17-18", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:null}, {name:"2º Kit 16-17", img:null}, {name:"3º Kit 16-17", img:null}, {name:"4º Kit 16-17", img:null}]},
+  {season:"1998-99", kits:[{name:"1º Kit 98-99", img:null}, {name:"2º Kit 98-99", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// LEVANTE UD
+// ---------------------------------------------------------------------
+const levanteUD = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:null}, {name:"2º Kit 26-27", img:null}, {name:"3º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_levanteUD_2526_Home.jpg"}, {name:"2º Kit 25-26", img:"images/IMG_levanteUD_2526_Away.jpg"}, {name:"3º Kit 25-26", img:"images/IMG_levanteUD_2526_Third.jpg"}, {name:"Retro 25-26", img:null}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null}, {name:"2º Kit 24-25", img:null}, {name:"3º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}, {name:"2º Kit 23-24", img:null}, {name:"3º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null}, {name:"2º Kit 22-23", img:null}, {name:"3º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null}, {name:"2º Kit 21-22", img:null}, {name:"3º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}, {name:"2º Kit 20-21", img:null}, {name:"3º Kit 20-21", img:null}, {name:"4º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null}, {name:"2º Kit 19-20", img:null}, {name:"3º Kit 19-20", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:null}, {name:"2º Kit 18-19", img:null}, {name:"3º Kit 18-19", img:null}, {name:"4º Kit 18-19", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null}, {name:"2º Kit 17-18", img:null}, {name:"3º Kit 17-18", img:null}, {name:"4º Kit 17-18", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:null}, {name:"2º Kit 16-17", img:null}]},
+  {season:"2003-04", kits:[{name:"1º Kit 03-04", img:null}, {name:"2º Kit 03-04", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// ELCHE CF
+// ---------------------------------------------------------------------
+const elcheCF = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_elcheCF_2526_Home.jpg"}, {name:"2º Kit 25-26", img:"images/IMG_elcheCF_2526_Away.jpg"}, {name:"3º Kit 25-26", img:"images/IMG_elcheCF_2526_Third.jpg"}, {name:"Retro 25-26", img:null}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null}, {name:"2º Kit 24-25", img:null}, {name:"3º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}, {name:"2º Kit 23-24", img:null}, {name:"3º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null}, {name:"2º Kit 22-23", img:null}, {name:"3º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null}, {name:"2º Kit 21-22", img:null}, {name:"3º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}, {name:"2º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null}, {name:"2º Kit 19-20", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:null}, {name:"2º Kit 18-19", img:null}, {name:"3º Kit 18-19", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null}, {name:"2º Kit 17-18", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:null}, {name:"2º Kit 16-17", img:null}, {name:"3º Kit 16-17", img:null}]},
+  {season:"2015-16", kits:[{name:"1º Kit 15-16", img:null}, {name:"2º Kit 15-16", img:null}, {name:"3º Kit 15-16", img:null}]},
+  {season:"1999-00", kits:[{name:"1º Kit 99-00", img:null}, {name:"2º Kit 99-00", img:null}, {name:"3º Kit 99-00", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// REAL OVIEDO
+// ---------------------------------------------------------------------
+const realOviedo = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:null}, {name:"2º Kit 26-27", img:null}, {name:"3º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_realOviedo_2526_Home.jpg"}, {name:"2º Kit 25-26", img:null}, {name:"3º Kit 25-26", img:"images/IMG_realOviedo_2526_Third.jpg"}, {name:"Centenario 25-26", img:null}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null}, {name:"2º Kit 24-25", img:null}, {name:"3º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}, {name:"2º Kit 23-24", img:null}, {name:"3º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null}, {name:"2º Kit 22-23", img:null}, {name:"3º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null}, {name:"2º Kit 21-22", img:null}, {name:"3º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}, {name:"2º Kit 20-21", img:null}, {name:"3º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null}, {name:"2º Kit 19-20", img:null}, {name:"3º Kit 19-20", img:null}, {name:"Aniversario 19-20", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:null}, {name:"2º Kit 18-19", img:null}, {name:"3º Kit 18-19", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null}, {name:"2º Kit 17-18", img:null}, {name:"3º Kit 17-18", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:null}, {name:"2º Kit 16-17", img:null}, {name:"3º Kit 16-17", img:null}, {name:"Aniversario 16-17", img:null}]},
+  {season:"2000-01", kits:[{name:"1º Kit 00-01", img:null}, {name:"2º Kit 00-01", img:null}, {name:"3º Kit 00-01", img:null}]},
+];
+
+// LEAGUES / SIDEBAR STRUCTURE
+// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// SEVILLA FC
+// ---------------------------------------------------------------------
+const sevilla = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_sevilla_2627_Home.jpg"},{name:"2º Kit 26-27", img:"images/IMG_sevilla_2627_Away.jpg"}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_sevilla_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:"images/IMG_sevilla_2526_Away.jpg"},{name:"3º Kit 25-26", img:"images/IMG_sevilla_2526_Third.jpg"},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:"images/IMG_sevilla_2425_Home.jpg"},{name:"2º Kit 24-25", img:"images/IMG_sevilla_2425_Away.jpg"},{name:"3º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null},{name:"3º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null},{name:"2º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:null}]},
+  {season:"2015-16", kits:[{name:"1º Kit 15-16", img:"images/IMG_sevilla_retro_1516.jpg"}]},
+  {season:"2014-15", kits:[{name:"1º Kit 14-15", img:null}]},
+  {season:"2012-13", kits:[{name:"1º Kit 12-13", img:"images/IMG_sevilla_1213.jpg"}]},
+  {season:"2010-11", kits:[{name:"1º Kit 10-11", img:null}]},
+  {season:"2009-10", kits:[{name:"1º Kit 09-10", img:null}]},
+  {season:"2008-09", kits:[{name:"1º Kit 08-09", img:null}]},
+  {season:"2007-08", kits:[{name:"1º Kit 07-08", img:null}]},
+  {season:"2006-07", kits:[{name:"1º Kit 06-07", img:null}]},
+  {season:"2005-06", kits:[{name:"1º Kit 05-06", img:null}]},
+  {season:"2004-05", kits:[{name:"1º Kit 04-05", img:null}]},
+  {season:"2003-04", kits:[{name:"1º Kit 03-04", img:"images/IMG_sevilla_retro_0304.jpg"}]},
+  {season:"2002-03", kits:[{name:"1º Kit 02-03", img:null}]},
+  {season:"2001-02", kits:[{name:"1º Kit 01-02", img:null}]},
+  {season:"2000-01", kits:[{name:"1º Kit 00-01", img:null}]},
+  {season:"1999-00", kits:[{name:"1º Kit 99-00", img:null}]},
+  {season:"1998-99", kits:[{name:"1º Kit 98-99", img:null}]},
+  {season:"1995-96", kits:[{name:"1º Kit 95-96", img:"images/IMG_sevilla_9496.jpg"}]},
+  {season:"1994-95", kits:[{name:"1º Kit 94-95", img:"images/IMG_sevilla_9495.jpg"}]},
+  {season:"1993-94", kits:[{name:"1º Kit 93-94", img:"images/IMG_sevilla_9394.jpg"}]},
+  {season:"1992-93", kits:[{name:"1º Kit 92-93", img:"images/IMG_sevilla_9293_home.jpg"},{name:"2º Kit 92-93", img:"images/IMG_sevilla_9293_away.jpg"}]},
+  {season:"1991-92", kits:[{name:"1º Kit 91-92", img:"images/IMG_sevilla_9192b.jpg"}]},
+  {season:"1989-90", kits:[{name:"1º Kit 89-90", img:null}]},
+  {season:"1988-89", kits:[{name:"1º Kit 88-89", img:null}]},
+  {season:"1987-88", kits:[{name:"1º Kit 87-88", img:"images/IMG_sevilla_retro_8790.jpg"}]},
+  {season:"1986-87", kits:[{name:"1º Kit 86-87", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// REAL BETIS
+// ---------------------------------------------------------------------
+const realBetis = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_realBetis_2627_Home.jpg"},{name:"2º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_realBetis_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:"images/IMG_realBetis_2526_Away.jpg"},{name:"3º Kit 25-26", img:"images/IMG_realBetis_2526_Third.jpg"},{name:"Portero 25-26", img:"images/IMG_betis_2526_GK.jpg"},{name:"Retro 25-26", img:null},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:"images/IMG_betis_2425_Home.jpg"},{name:"2º Kit 24-25", img:"images/IMG_betis_2425_Away.jpg"},{name:"3º Kit 24-25", img:"images/IMG_betis_2425_Third.jpg"},{name:"Final Conference League 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null},{name:"2º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null},{name:"2º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null},{name:"Final Copa del Rey 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null}]},
+  {season:"2015-16", kits:[{name:"1º Kit 15-16", img:null}]},
+  {season:"2012-13", kits:[{name:"1º Kit 12-13", img:null}]},
+  {season:"2011-12", kits:[{name:"1º Kit 11-12", img:null}]},
+  {season:"2010-11", kits:[{name:"1º Kit 10-11", img:null}]},
+  {season:"2008-09", kits:[{name:"1º Kit 08-09", img:null}]},
+  {season:"2007-08", kits:[{name:"1º Kit 07-08", img:null}]},
+  {season:"2006-07", kits:[{name:"1º Kit 06-07", img:null}]},
+  {season:"2005-06", kits:[{name:"1º Kit 05-06", img:null}]},
+  {season:"2004-05", kits:[{name:"1º Kit 04-05", img:null}]},
+  {season:"2003-04", kits:[{name:"1º Kit 03-04", img:null}]},
+  {season:"1999-00", kits:[{name:"1º Kit 99-00", img:"images/IMG_betis_retro_9900.jpg"}]},
+  {season:"1996-97", kits:[{name:"1º Kit 96-97", img:null}]},
+  {season:"1995-96", kits:[{name:"1º Kit 95-96", img:null}]},
+
+  {season:"Ediciones Especiales", kits:[{name:"Edición 1", img:"images/IMG_betis_special_1.jpg"},{name:"Edición 2", img:"images/IMG_betis_special_2.jpg"},{name:"Edición 3", img:"images/IMG_betis_special_3.jpg"},{name:"Edición 4", img:"images/IMG_betis_special_4.jpg"},{name:"Edición 5", img:"images/IMG_betis_special_5.jpg"},{name:"Edición 6", img:"images/IMG_betis_special_6.jpg"},{name:"Edición 7", img:"images/IMG_betis_special_7.jpg"},{name:"Edición 8", img:"images/IMG_betis_special_8.jpg"},{name:"Edición 9", img:"images/IMG_betis_special_9.jpg"},{name:"Edición 10", img:"images/IMG_betis_special_10.jpg"}]},
+];
+
+// ---------------------------------------------------------------------
+// ATHLETIC CLUB — solo temporadas recientes confirmadas por ahora
+// (la foto 25-26 dio bloqueo temporal del sitio al extraerla; pendiente de reintentar)
+// ---------------------------------------------------------------------
+const athletic = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_athletic_2627_Home.jpg"},{name:"2º Kit 26-27", img:"images/IMG_athletic_2627_Away.jpg"}]},
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_athletic_2526_Home.jpg"},{name:"2º Kit 25-26", img:"images/IMG_athletic_2526_Away.jpg"},{name:"3º Kit 25-26", img:"images/IMG_athletic_2526_Third.jpg"},{name:"4º Kit 25-26", img:null},{name:"Retro 25-26", img:null}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null},{name:"2º Kit 24-25", img:null},{name:"3º Kit 24-25", img:null},{name:"4º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null},{name:"2º Kit 23-24", img:null},{name:"3º Kit 23-24", img:null},{name:"Aniversario 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null},{name:"2º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null},{name:"2º Kit 21-22", img:null}]},
+  {season:"2011-12", kits:[{name:"1º Kit 11-12", img:"images/IMG_athletic_1112.jpg"}]},
+  {season:"2002-03", kits:[{name:"1º Kit 02-03", img:"images/IMG_athletic_0203.jpg"}]},
+  {season:"2001-02", kits:[{name:"1º Kit 01-02", img:"images/IMG_athletic_0103.jpg"}]},
+  {season:"1999-00", kits:[{name:"1º Kit 99-00", img:"images/IMG_athletic_9900.jpg"}]},
+  {season:"1998-99", kits:[{name:"1º Kit 98-99", img:"images/IMG_athletic_9899.jpg"}]},
+  {season:"1994-95", kits:[{name:"1º Kit 94-95", img:"images/IMG_athletic_9495.jpg"}]},
+  {season:"Ediciones Especiales", kits:[{name:"Edición 1", img:"images/IMG_athletic_special_1.jpg"},{name:"125 Aniversario", img:"images/IMG_athletic_special_2.jpg"}]},
+];
+
+// ---------------------------------------------------------------------
+// VALENCIA CF
+// ---------------------------------------------------------------------
+const valencia = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_valencia_2627_Home.jpg"},{name:"2º Kit 26-27", img:"images/IMG_valencia_2627_Away.jpg"}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_valencia_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:null},{name:"3º Kit 25-26", img:"images/IMG_valencia_2526_Third.jpg"},{name:"Retro 25-26", img:null},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null},{name:"2º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}]},
+  {season:"2018-19", kits:[{name:"1º Kit 18-19", img:"images/IMG_valencia_1819.jpg"}]},
+  {season:"2006-07", kits:[{name:"1º Kit 06-07", img:"images/IMG_valencia_0607.jpg"},{name:"2º Kit 06-07", img:null}]},
+  {season:"2005-06", kits:[{name:"1º Kit 05-06", img:null}]},
+  {season:"2004-05", kits:[{name:"1º Kit 04-05", img:"images/IMG_valencia_0405.jpg"}]},
+  {season:"2000-01", kits:[{name:"1º Kit 00-01", img:null}]},
+  {season:"1999-00", kits:[{name:"1º Kit 99-00", img:"images/IMG_valencia_9900.jpg"}]},
+  {season:"1996-97", kits:[{name:"1º Kit 96-97", img:"images/IMG_valencia_9697.jpg"}]},
+  {season:"1995-96", kits:[{name:"1º Kit 95-96", img:"images/IMG_valencia_9596.jpg"}]},
+  {season:"1990-91", kits:[{name:"1º Kit 90-91", img:"images/IMG_valencia_9091.jpg"}]},
+  {season:"1980-82", kits:[{name:"1º Kit 80-82", img:"images/IMG_valencia_8082.jpg"}]},
+  {season:"Ediciones Especiales", kits:[{name:"Edición 1", img:"images/IMG_valencia_special_1.jpg"}]},
+];
+
+// ---------------------------------------------------------------------
+// VILLARREAL CF
+// ---------------------------------------------------------------------
+const villarreal = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_villarreal_2627_Home.jpg"},{name:"2º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_villarreal_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:"images/IMG_villarreal_2526_Away.jpg"},{name:"3º Kit 25-26", img:null},{name:"Retro 25-26", img:null},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null},{name:"3º Kit 22-23", img:null},{name:"Aniversario 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null},{name:"2º Kit 21-22", img:null},{name:"3º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}]},
+  {season:"2010-11", kits:[{name:"1º Kit 10-11", img:null}]},
+  {season:"2008-09", kits:[{name:"1º Kit 08-09", img:"images/IMG_villarreal_0809.jpg"}]},
+  {season:"2006-07", kits:[{name:"1º Kit 06-07", img:null}]},
+  {season:"2005-06", kits:[{name:"1º Kit 05-06", img:"images/IMG_villarreal_0506.jpg"}]},
+  {season:"2004-05", kits:[{name:"1º Kit 04-05", img:null},{name:"2º Kit 04-05", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// REAL SOCIEDAD — datos confirmados, foto pendiente de próximo lote
+// ---------------------------------------------------------------------
+const realSociedad = [
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_realSociedad_2526_Home.jpg"},{name:"2º Kit 25-26", img:"images/IMG_realSociedad_2526_Away.jpg"},{name:"3º Kit 25-26", img:null},{name:"4º Kit 25-26", img:null}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null},{name:"2º Kit 24-25", img:null},{name:"Especial 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null},{name:"2º Kit 23-24", img:null},{name:"3º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null},{name:"2º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null},{name:"2º Kit 21-22", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null},{name:"2º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null},{name:"2º Kit 19-20", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:null},{name:"2º Kit 16-17", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// CELTA DE VIGO
+// ---------------------------------------------------------------------
+const celta = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_celta_2627_Home.jpg"},{name:"2º Kit 26-27", img:"images/IMG_celta_2627_Away.jpg"}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_celta_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:"images/IMG_celta_2526_Away.jpg"},{name:"3º Kit 25-26", img:"images/IMG_celta_2526_Third.jpg"},{name:"Retro 25-26", img:null},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null},{name:"2º Kit 24-25", img:null},{name:"3º Kit 24-25", img:null},{name:"Especial 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}]},
+  {season:"2003-04", kits:[{name:"1º Kit 03-04", img:null}]},
+  {season:"1997-98", kits:[{name:"1º Kit 97-98", img:null}]},
+  {season:"1990-91", kits:[{name:"2º Kit 90-91", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// RCD ESPANYOL
+// ---------------------------------------------------------------------
+const espanyol = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_espanyol_2627_Home.jpg"},{name:"2º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_espanyol_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:"images/IMG_espanyol_2526_Away.jpg"},{name:"3º Kit 25-26", img:"images/IMG_espanyol_2526_Third.jpg"},{name:"4º Kit 25-26", img:null},{name:"Aniversario 25-26", img:null},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}]},
+  {season:"2012-13", kits:[{name:"1º Kit 12-13", img:null}]},
+  {season:"2006-07", kits:[{name:"1º Kit 06-07", img:null}]},
+  {season:"1999-00", kits:[{name:"1º Kit 99-00", img:null}]},
+  {season:"1994-95", kits:[{name:"1º Kit 94-95", img:null}]},
+  {season:"1986-87", kits:[{name:"1º Kit 86-87", img:null}]},
+  {season:"1981-82", kits:[{name:"1º Kit 81-82", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// CA OSASUNA
+// ---------------------------------------------------------------------
+const osasuna = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_osasuna_2627_Home.jpg"},{name:"2º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_osasuna_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:"images/IMG_osasuna_2526_Away.jpg"},{name:"3º Kit 25-26", img:"images/IMG_osasuna_2526_Third.jpg"},{name:"Retro 25-26", img:null},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null},{name:"2º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null}]},
+  {season:"2021-22", kits:[{name:"1º Kit 21-22", img:null},{name:"3º Kit 21-22", img:null},{name:"Especial 21-22", img:null}]},
+  {season:"2015-16", kits:[{name:"1º Kit 15-16", img:null}]},
+  {season:"1985-86", kits:[{name:"1º Kit 85-86", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// ESPAÑA (Selección) — foto subida por el usuario, incrustada directamente (base64)
+// ---------------------------------------------------------------------
+const espana = [
+  {season:"2026", kits:[
+    {name:"Visitante 2026", img:"images/espanaImgB64.jpg"},
+    {name:"Local 2026", img:null},
+  ]},
+];
+
+// ---------------------------------------------------------------------
+// GETAFE CF
+// ---------------------------------------------------------------------
+const getafe = [
+  {season:"2026-27", kits:[{name:"1º Kit 26-27", img:"images/IMG_getafe_2627_Home.jpg"},{name:"2º Kit 26-27", img:"images/IMG_getafe_2627_Away.jpg"},{name:"3º Kit 26-27", img:null}]},
+  {season:"2025-26", kits:[
+    {name:"1º Kit 25-26", img:"images/IMG_getafe_2526_Home.jpg"},
+    {name:"2º Kit 25-26", img:null},{name:"3º Kit 25-26", img:null},
+  ]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null},{name:"2º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null}]},
+  {season:"2019-20", kits:[{name:"1º Kit 19-20", img:null},{name:"Europa League 19-20", img:null}]},
+  {season:"2010-11", kits:[{name:"1º Kit 10-11", img:null},{name:"2º Kit 10-11", img:null}]},
+  {season:"2009-10", kits:[{name:"1º Kit 09-10", img:null},{name:"2º Kit 09-10", img:null}]},
+  {season:"2005-06", kits:[{name:"2º Kit 05-06", img:null}]},
+  {season:"1999-00", kits:[{name:"Portero 99-00", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// GIRONA FC
+// ---------------------------------------------------------------------
+const girona = [
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_girona_2526_Home.jpg"},{name:"2º Kit 25-26", img:"images/IMG_girona_2526_Away.jpg"},{name:"3º Kit 25-26", img:"images/IMG_girona_2526_Third.jpg"}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null},{name:"2º Kit 24-25", img:null},{name:"3º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null},{name:"2º Kit 23-24", img:null},{name:"3º Kit 23-24", img:null}]},
+  {season:"2022-23", kits:[{name:"1º Kit 22-23", img:null},{name:"2º Kit 22-23", img:null},{name:"3º Kit 22-23", img:null}]},
+  {season:"2020-21", kits:[{name:"1º Kit 20-21", img:null},{name:"2º Kit 20-21", img:null}]},
+  {season:"2017-18", kits:[{name:"1º Kit 17-18", img:null},{name:"2º Kit 17-18", img:null},{name:"3º Kit 17-18", img:null}]},
+  {season:"2015-16", kits:[{name:"2º Kit 15-16", img:null},{name:"3º Kit 15-16", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// DEPORTIVO ALAVÉS
+// ---------------------------------------------------------------------
+const alaves = [
+  {season:"2025-26", kits:[{name:"1º Kit 25-26", img:"images/IMG_alaves_2526_Home.jpg"},{name:"2º Kit 25-26", img:"images/IMG_alaves_2526_Away.jpg"},{name:"3º Kit 25-26", img:"images/IMG_alaves_2526_Third.jpg"}]},
+  {season:"2024-25", kits:[{name:"1º Kit 24-25", img:null},{name:"2º Kit 24-25", img:null}]},
+  {season:"2023-24", kits:[{name:"1º Kit 23-24", img:null}]},
+  {season:"2016-17", kits:[{name:"1º Kit 16-17", img:null},{name:"Final Copa del Rey 16-17", img:null}]},
+  {season:"2000-01", kits:[{name:"1º Kit 00-01", img:null},{name:"Final UEFA 00-01", img:null}]},
+];
+
+// ---------------------------------------------------------------------
+// SELECCIONES NACIONALES (estructura lista, a la espera de contenido)
+// ---------------------------------------------------------------------
+
+const interMilan = [
+  {season:"2021-22", kits:[{name:"2021-22".trim(), img:"images/IMG_interMilan_2122.jpg"}]},
+  {season:"2019-20", kits:[{name:"2019-20".trim(), img:"images/IMG_interMilan_1920.jpg"}]},
+  {season:"2011-12", kits:[{name:"2011-12".trim(), img:"images/IMG_interMilan_1112.jpg"},{name:"2º Kit 2011-12", img:"images/IMG_interMilan_IM_1112_b.jpg"}]},
+  {season:"2010-11", kits:[{name:"2010-11".trim(), img:"images/IMG_interMilan_1011.jpg"}]},
+  {season:"2009-10", kits:[{name:"2009-10".trim(), img:"images/IMG_interMilan_10.jpg"}, {name:"2º Kit 2009-10".trim(), img:"images/IMG_interMilan_10champ.jpg"}, {name:"3º Kit 2009-10".trim(), img:"images/IMG_interMilan_0910.jpg"}]},
+  {season:"2007-08", kits:[{name:"2007-08".trim(), img:"images/IMG_interMilan_0708.jpg"}]},
+  {season:"2004-05", kits:[{name:"2004-05".trim(), img:"images/IMG_interMilan_0405.jpg"},{name:"2º Kit 2004-05", img:"images/IMG_interMilan_IM_0405_b.jpg"},{name:"3º Kit 2004-05", img:"images/IMG_interMilan_IM_0405_c.jpg"}]},
+  {season:"2002-04", kits:[{name:"2002-04".trim(), img:"images/IMG_interMilan_0204.jpg"}]},
+  {season:"2002-03", kits:[{name:"2002-03".trim(), img:"images/IMG_interMilan_0203.jpg"}]},
+  {season:"2001-02", kits:[{name:"2001-02".trim(), img:"images/IMG_interMilan_0102.jpg"}]},
+  {season:"1999-00", kits:[{name:"1999-00".trim(), img:"images/IMG_interMilan_9900.jpg"}]},
+  {season:"1998-99", kits:[{name:"1998-99".trim(), img:"images/IMG_interMilan_9899.jpg"},{name:"2º Kit 1998-99", img:"images/IMG_interMilan_IM_9899_b.jpg"},{name:"3º Kit 1998-99", img:"images/IMG_interMilan_IM_9899_c.jpg"}]},
+  {season:"1997-98", kits:[{name:"1997-98".trim(), img:"images/IMG_interMilan_9798.jpg"},{name:"2º Kit 1997-98", img:"images/IMG_interMilan_IM_9798_b.jpg"}]},
+  {season:"1996-97", kits:[{name:"1996-97".trim(), img:"images/IMG_interMilan_9697.jpg"}]},
+  {season:"1995-96", kits:[{name:"1995-96".trim(), img:"images/IMG_interMilan_9596.jpg"},{name:"2º Kit 1995-96", img:"images/IMG_interMilan_IM_9596_b.jpg"}]},
+  {season:"1994-95", kits:[{name:"1994-95".trim(), img:"images/IMG_interMilan_9495.jpg"},{name:"2º Kit 1994-95", img:"images/IMG_interMilan_IM_9495_b.jpg"}]},
+  {season:"1993-94", kits:[{name:"1993-94".trim(), img:"images/IMG_interMilan_9394.jpg"}]},
+  {season:"1992-94", kits:[{name:"1992-94".trim(), img:"images/IMG_interMilan_9294.jpg"}]},
+  {season:"1992-93", kits:[{name:"1992-93".trim(), img:"images/IMG_interMilan_9293.jpg"}]},
+  {season:"1990-91", kits:[{name:"1990-91".trim(), img:"images/IMG_interMilan_9091.jpg"},{name:"2º Kit 1990-91", img:"images/IMG_interMilan_IM_9091_b.jpg"}]},
+  {season:"1988-90", kits:[{name:"1988-90".trim(), img:"images/IMG_interMilan_8890.jpg"}]},
+];
+
+
+// ---------------------------------------------------------------------
+// GLASGOW RANGERS (RETRO)
+// ---------------------------------------------------------------------
+
+const glasgowRangers = [
+  {season:"2015-16", kits:[{name:"1º Kit 2015-16", img:"images/IMG_glasgowRangers_1516.jpg"}]},
+  {season:"2008-09", kits:[{name:"1º Kit 2008-09", img:"images/IMG_glasgowRangers_0809.jpg"}]},
+  {season:"2002-03", kits:[{name:"1º Kit 2002-03", img:"images/IMG_glasgowRangers_0203.jpg"}]},
+  {season:"1999-01", kits:[{name:"1º Kit 1999-01", img:"images/IMG_glasgowRangers_9901.jpg"}]},
+  {season:"1999-00", kits:[{name:"1º Kit 1999-00", img:"images/IMG_glasgowRangers_9900.jpg"}]},
+  {season:"1997-99", kits:[{name:"1º Kit 1997-99", img:"images/IMG_glasgowRangers_9799.jpg"}]},
+  {season:"1996-97", kits:[{name:"1º Kit 1996-97", img:"images/IMG_glasgowRangers_9697.jpg"},{name:"2º Kit 1996-97", img:"images/IMG_glasgowRangers_GR_9697_b.jpg"}]},
+  {season:"1995-96", kits:[{name:"1º Kit 1995-96", img:"images/IMG_glasgowRangers_9596.jpg"}]},
+  {season:"1994-95", kits:[{name:"1º Kit 1994-95", img:"images/IMG_glasgowRangers_9495.jpg"},{name:"2º Kit 1994-95", img:"images/IMG_glasgowRangers_GR_9495_b.jpg"}]},
+  {season:"1994", kits:[{name:"1º Kit 1994", img:"images/IMG_glasgowRangers_94.jpg"}]},
+  {season:"1993-94", kits:[{name:"1º Kit 1993-94", img:"images/IMG_glasgowRangers_9394.jpg"}]},
+  {season:"1992-94", kits:[{name:"1º Kit 1992-94", img:"images/IMG_glasgowRangers_9294.jpg"}]},
+  {season:"1990-92", kits:[{name:"1º Kit 1990-92", img:"images/IMG_glasgowRangers_9092.jpg"},{name:"2º Kit 1990-92", img:"images/IMG_glasgowRangers_GR_9092_b.jpg"}]},
+  {season:"1987-90", kits:[{name:"1º Kit 1987-90", img:"images/IMG_glasgowRangers_8790.jpg"}]},
+  {season:"1987-88", kits:[{name:"1º Kit 1987-88", img:"images/IMG_glasgowRangers_8788.jpg"}]},
+  {season:"1982-83", kits:[{name:"1º Kit 1982-83", img:"images/IMG_glasgowRangers_8283.jpg"},{name:"2º Kit 1982-83", img:"images/IMG_glasgowRangers_GR_8283_b.jpg"}]},
+];
+
+
+// ---------------------------------------------------------------------
+// BAYERN MUNICH (RETRO)
+// ---------------------------------------------------------------------
+
+const bayernMunichRetro = [
+  {season:"2021-22", kits:[{name:"1º Kit 2021-22", img:"images/IMG_bayernMunich_2122.jpg"},{name:"2º Kit 2021-22", img:"images/IMG_bayernMunichRetro_BM_2122_b.jpg"}]},
+  {season:"2017-18", kits:[{name:"1º Kit 2017-18", img:"images/IMG_bayernMunich_1718.jpg"}]},
+  {season:"2013-14", kits:[{name:"1º Kit 2013-14", img:"images/IMG_bayernMunich_1314.jpg"},{name:"2º Kit 2013-14", img:"images/IMG_bayernMunichRetro_BM_1314_b.jpg"}]},
+  {season:"2010-11", kits:[{name:"1º Kit 2010-11", img:"images/IMG_bayernMunich_1011.jpg"}]},
+  {season:"2007-08", kits:[{name:"1º Kit 2007-08", img:"images/IMG_bayernMunich_0708.jpg"}]},
+  {season:"2005-06", kits:[{name:"1º Kit 2005-06", img:"images/IMG_bayernMunich_0506.jpg"}]},
+  {season:"2004-05", kits:[{name:"1º Kit 2004-05", img:"images/IMG_bayernMunich_0405.jpg"}]},
+  {season:"2003-04", kits:[{name:"1º Kit 2003-04", img:"images/IMG_bayernMunich_0304.jpg"}]},
+  {season:"2001-02", kits:[{name:"1º Kit 2001-02", img:"images/IMG_bayernMunich_0102.jpg"}]},
+  {season:"2000-02", kits:[{name:"1º Kit 2000-02", img:"images/IMG_bayernMunich_0002.jpg"}]},
+  {season:"2000-01", kits:[{name:"1º Kit 2000-01", img:"images/IMG_bayernMunich_0001.jpg"},{name:"2º Kit 2000-01", img:"images/IMG_bayernMunichRetro_BM_0001_b.jpg"}]},
+  {season:"1998-00", kits:[{name:"1º Kit 1998-00", img:"images/IMG_bayernMunich_9800.jpg"}]},
+  {season:"1998-99", kits:[{name:"1º Kit 1998-99", img:"images/IMG_bayernMunich_9899.jpg"}]},
+  {season:"1997-99", kits:[{name:"1º Kit 1997-99", img:"images/IMG_bayernMunich_9799.jpg"}]},
+  {season:"1997-98", kits:[{name:"1º Kit 1997-98", img:"images/IMG_bayernMunich_9798.jpg"}]},
+  {season:"1996-98", kits:[{name:"1º Kit 1996-98", img:"images/IMG_bayernMunich_9698.jpg"}]},
+  {season:"1993-95", kits:[{name:"1º Kit 1993-95", img:"images/IMG_bayernMunich_9395.jpg"},{name:"2º Kit 1993-95", img:"images/IMG_bayernMunichRetro_BM_9395_b.jpg"}]},
+];
+
+const chivas = [
+{season:"2017-18", kits:[{name:"Local", img:"images/IMG_chivas_1718.jpg"}]},
+{season:"2016-17", kits:[{name:"Local", img:"images/IMG_chivas_1617.jpg"}]},
+{season:"2010-11", kits:[{name:"Local", img:"images/IMG_chivas_1011.jpg"}]},
+{season:"2006-07", kits:[{name:"Local", img:"images/IMG_chivas_0607.jpg"}]},
+{season:"2003-04", kits:[{name:"Local", img:"images/IMG_chivas_0304.jpg"},{name:"2º Kit 2003-04", img:"images/IMG_chivas_CH_0304_b.jpg"},{name:"3º Kit 2003-04", img:"images/IMG_chivas_CH_0304_c.jpg"}]},
+{season:"2002-03", kits:[{name:"Local", img:"images/IMG_chivas_0203.jpg"},{name:"2º Kit 2002-03", img:"images/IMG_chivas_CH_0203_b.jpg"}]},
+{season:"1999-00", kits:[{name:"Local", img:"images/IMG_chivas_9900.jpg"},{name:"2º Kit 1999-00", img:"images/IMG_chivas_CH_9900_b.jpg"},{name:"3º Kit 1999-00", img:"images/IMG_chivas_CH_9900_c.jpg"}]},
+{season:"1997-98", kits:[{name:"Local", img:"images/IMG_chivas_9798.jpg"}]},
+{season:"1994-95", kits:[{name:"Local", img:"images/IMG_chivas_9495.jpg"}]},
+{season:"1992-93", kits:[{name:"Local", img:"images/IMG_chivas_9293.jpg"}]},
+{season:"1991-92", kits:[{name:"Local", img:"images/IMG_chivas_9192.jpg"}]}
+];
+const brasilRetro = [
+{season:"2014-15", kits:[{name:"Local", img:"images/IMG_brasil_1415.jpg"}]},
+{season:"2013-14", kits:[{name:"Local", img:"images/IMG_brasil_1314.jpg"}]},
+{season:"2010-11", kits:[{name:"Local", img:"images/IMG_brasil_1011.jpg"},{name:"2º Kit 2010-11", img:"images/IMG_brasilRetro_BR_1011_b.jpg"}]},
+{season:"2006-07", kits:[{name:"Local", img:"images/IMG_brasil_0607.jpg"},{name:"2º Kit 2006-07", img:"images/IMG_brasilRetro_BR_0607_b.jpg"}]},
+{season:"2004-06", kits:[{name:"Local", img:"images/IMG_brasil_0406.jpg"},{name:"2º Kit 2004-06", img:"images/IMG_brasilRetro_BR_0406_b.jpg"}]},
+{season:"2002-03", kits:[{name:"Local", img:"images/IMG_brasil_0203.jpg"},{name:"2º Kit 2002-03", img:"images/IMG_brasilRetro_BR_0203_b.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_brasil_9899.jpg"},{name:"Portero", img:"images/IMG_brasil_9899GK.jpg"},{name:"2º Kit 1998-99", img:"images/IMG_brasilRetro_BR_9899_b.jpg"}]},
+{season:"1997-98", kits:[{name:"Local", img:"images/IMG_brasil_9798.jpg"}]},
+{season:"1994-96", kits:[{name:"Local", img:"images/IMG_brasil_9496.jpg"}]},
+{season:"1993-94", kits:[{name:"Local", img:"images/IMG_brasil_9394.jpg"}]},
+{season:"1991-93", kits:[{name:"Local", img:"images/IMG_brasil_9193.jpg"},{name:"2º Kit 1991-93", img:"images/IMG_brasilRetro_BR_9193_b.jpg"}]},
+{season:"1988-89", kits:[{name:"Local", img:"images/IMG_brasil_8889.jpg"},{name:"2º Kit 1988-89", img:"images/IMG_brasilRetro_BR_8889_b.jpg"}]},
+{season:"1984-85", kits:[{name:"Local", img:"images/IMG_brasil_8485.jpg"}]},
+{season:"1971-72", kits:[{name:"Local", img:"images/IMG_brasil_7172.jpg"}]},
+{season:"1958-59", kits:[{name:"Local", img:"images/IMG_brasil_5859.jpg"}]}
+];
+const manUnited = [
+{season:"2019-20", kits:[{name:"Local", img:"images/IMG_manUnited_1920.jpg"}]},
+{season:"2018-19", kits:[{name:"Local", img:"images/IMG_manUnited_1819.jpg"}]},
+{season:"2016-17", kits:[{name:"Local", img:"images/IMG_manUnited_1617.jpg"}]},
+{season:"2012-13", kits:[{name:"Local", img:"images/IMG_manUnited_1213.jpg"}]},
+{season:"2011-13", kits:[{name:"Local", img:"images/IMG_manUnited_1113.jpg"}]},
+{season:"2010-11", kits:[{name:"Local", img:"images/IMG_manUnited_1011.jpg"},{name:"2º Kit 2010-11", img:"images/IMG_manUnited_MU_1011_b.jpg"}]},
+{season:"2007-08", kits:[{name:"Local", img:"images/IMG_manUnited_0708.jpg"},{name:"2º Kit 2007-08", img:"images/IMG_manUnited_MU_0708_b.jpg"}]},
+{season:"2005-06", kits:[{name:"Local", img:"images/IMG_manUnited_0506.jpg"}]},
+{season:"2003-05", kits:[{name:"Local", img:"images/IMG_manUnited_0305.jpg"}]},
+{season:"2000-01", kits:[{name:"Local", img:"images/IMG_manUnited_0001.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_manUnited_9899.jpg"}]},
+{season:"1997-98", kits:[{name:"Local", img:"images/IMG_manUnited_9798.jpg"}]},
+{season:"1996-97", kits:[{name:"Local", img:"images/IMG_manUnited_9697.jpg"}]},
+{season:"1995-96", kits:[{name:"Local", img:"images/IMG_manUnited_9596.jpg"}]},
+{season:"1994-96", kits:[{name:"Local", img:"images/IMG_manUnited_9496.jpg"}]},
+{season:"1992-93", kits:[{name:"Local", img:"images/IMG_manUnited_9293.jpg"}]},
+{season:"1991", kits:[{name:"Local", img:"images/IMG_manUnited_91.jpg"}]},
+{season:"1990-92", kits:[{name:"Local", img:"images/IMG_manUnited_9092.jpg"}]},
+{season:"1988-90", kits:[{name:"Local", img:"images/IMG_manUnited_8890.jpg"}]},
+{season:"1986-88", kits:[{name:"Local", img:"images/IMG_manUnited_8688.jpg"}]},
+{season:"1985", kits:[{name:"Local", img:"images/IMG_manUnited_85.jpg"}]}
+];
+const portugalRetro = [
+{season:"2016-17", kits:[{name:"Local", img:"images/IMG_portugalRetro_1617.jpg"}]},
+{season:"2014-15", kits:[{name:"Local", img:"images/IMG_portugalRetro_1415.jpg"}]},
+{season:"2012-13", kits:[{name:"Local", img:"images/IMG_portugalRetro_1213.jpg"},{name:"2º Kit 2012-13", img:"images/IMG_portugalRetro_PT_1213_b.jpg"}]},
+{season:"2010-11", kits:[{name:"Local", img:"images/IMG_portugalRetro_1011.jpg"},{name:"2º Kit 2010-11", img:"images/IMG_portugalRetro_PT_1011_b.jpg"}]},
+{season:"2006-07", kits:[{name:"Local", img:"images/IMG_portugalRetro_0607.jpg"},{name:"2º Kit 2006-07", img:"images/IMG_portugalRetro_PT_0607_b.jpg"},{name:"3º Kit 2006-07", img:"images/IMG_portugalRetro_PT_0607_c.jpg"}]},
+{season:"2004-05", kits:[{name:"Local", img:"images/IMG_portugalRetro_0405.jpg"},{name:"2º Kit 2004-05", img:"images/IMG_portugalRetro_PT_0405_b.jpg"}]},
+{season:"2002-03", kits:[{name:"Local", img:"images/IMG_portugalRetro_0203.jpg"},{name:"2º Kit 2002-03", img:"images/IMG_portugalRetro_PT_0203_b.jpg"}]},
+{season:"2000-01", kits:[{name:"Local", img:"images/IMG_portugalRetro_0001.jpg"}]},
+{season:"1999-00", kits:[{name:"Local", img:"images/IMG_portugalRetro_9900.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_portugalRetro_9899.jpg"}]},
+{season:"1997-98", kits:[{name:"Local", img:"images/IMG_portugalRetro_9798.jpg"}]},
+{season:"1992-94", kits:[{name:"Local", img:"images/IMG_portugalRetro_9294.jpg"},{name:"2º Kit 1992-94", img:"images/IMG_portugalRetro_PT_9294_b.jpg"}]},
+{season:"1972-73", kits:[{name:"Local", img:"images/IMG_portugalRetro_7273.jpg"}]},
+{season:"1966-69", kits:[{name:"Local", img:"images/IMG_portugalRetro_6669.jpg"}]}
+];
+const oporto = [
+{season:"2017-18", kits:[{name:"Local", img:"images/IMG_oporto_1718.jpg"}]},
+{season:"2014-15", kits:[{name:"Local", img:"images/IMG_oporto_1415.jpg"}]},
+{season:"2013-14", kits:[{name:"Local", img:"images/IMG_oporto_1314.jpg"}]},
+{season:"2012-13", kits:[{name:"Local", img:"images/IMG_oporto_1213.jpg"}]},
+{season:"2011-12", kits:[{name:"Local", img:"images/IMG_oporto_1112.jpg"}]},
+{season:"2010-11", kits:[{name:"Local", img:"images/IMG_oporto_1011.jpg"}]},
+{season:"2009-10", kits:[{name:"Local", img:"images/IMG_oporto_0910.jpg"}]},
+{season:"2003-04", kits:[{name:"Local", img:"images/IMG_oporto_0304.jpg"}]},
+{season:"1999-00", kits:[{name:"Local", img:"images/IMG_oporto_9900.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_oporto_9899.jpg"}]},
+{season:"1997-99", kits:[{name:"Local", img:"images/IMG_oporto_9799.jpg"},{name:"2º Kit 1997-99", img:"images/IMG_oporto_OP_9799_a.jpg"}]},
+{season:"1995-97", kits:[{name:"Local", img:"images/IMG_oporto_9597.jpg"}]},
+{season:"1994-95", kits:[{name:"Local", img:"images/IMG_oporto_9495.jpg"}]},
+{season:"1990-93", kits:[{name:"Local", img:"images/IMG_oporto_9093.jpg"}]},
+{season:"1986-87", kits:[{name:"Local", img:"images/IMG_oporto_8687.jpg"}]},
+{season:"1985-86", kits:[{name:"Local", img:"images/IMG_oporto_8586.jpg"}]}
+];
+const escociaRetro = [
+{season:"2016-17", kits:[{name:"Local", img:"images/IMG_escociaRetro_1617.jpg"},{name:"2º Kit 2016-17", img:"images/IMG_escociaRetro_SC_1617_b.jpg"}]},
+{season:"2002", kits:[{name:"Local", img:"images/IMG_escociaRetro_02.jpg"},{name:"2º Kit 2002", img:"images/IMG_escociaRetro_SC_02_b.jpg"}]},
+{season:"1998-00", kits:[{name:"Local", img:"images/IMG_escociaRetro_9800.jpg"}]},
+{season:"1996-98", kits:[{name:"Local", img:"images/IMG_escociaRetro_9698.jpg"}]},
+{season:"1994-96", kits:[{name:"Local", img:"images/IMG_escociaRetro_9496.jpg"},{name:"2º Kit 1994-96", img:"images/IMG_escociaRetro_SC_9496_b.jpg"}]},
+{season:"1992-93", kits:[{name:"Local", img:"images/IMG_escociaRetro_9293.jpg"}]},
+{season:"1988-91", kits:[{name:"Local", img:"images/IMG_escociaRetro_8891.jpg"}]},
+{season:"1988-89", kits:[{name:"Local", img:"images/IMG_escociaRetro_8889.jpg"}]},
+{season:"1987-88", kits:[{name:"Local", img:"images/IMG_escociaRetro_8788.jpg"}]},
+{season:"1978-79", kits:[{name:"Local", img:"images/IMG_escociaRetro_7879.jpg"}]}
+];
+const alemaniaRetro = [
+{season:"2021", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_2021.jpg"}]},
+{season:"2020", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_2020.jpg"}]},
+{season:"2018", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_2018.jpg"}]},
+{season:"2016", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_2016.jpg"}]},
+{season:"2014", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_2014.jpg"},{name:"2º Kit 2014", img:"images/IMG_alemaniaRetro_DE_2014_b.jpg"}]},
+{season:"2012-13", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_1213.jpg"}]},
+{season:"2010-11", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_1011.jpg"}]},
+{season:"2008-09", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_0809.jpg"}]},
+{season:"2006-07", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_0607.jpg"},{name:"2º Kit 2006-07", img:"images/IMG_alemaniaRetro_DE_0607_b.jpg"}]},
+{season:"1998", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_98.jpg"}]},
+{season:"1996", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_96.jpg"}]},
+{season:"1990-91", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_9091.jpg"}]},
+{season:"1988-90", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_8890.jpg"}]},
+{season:"1988", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_88.jpg"}]},
+{season:"1986", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_86.jpg"}]},
+{season:"1984-85", kits:[{name:"Local", img:"images/IMG_alemaniaRetro_8485.jpg"},{name:"Alternativa", img:"images/IMG_alemaniaRetro_8485b.jpg"}]}
+];
+const argentinaRetro = [
+{season:"2018-19", kits:[{name:"Local", img:"images/IMG_argentinaRetro_1819.jpg"},{name:"2º Kit 2018-19", img:"images/IMG_argentinaRetro_AR_1819_b.jpg"}]},
+{season:"2014-15", kits:[{name:"Local", img:"images/IMG_argentinaRetro_1415.jpg"},{name:"2º Kit 2014-15", img:"images/IMG_argentinaRetro_AR_1415_b.jpg"}]},
+{season:"2010", kits:[{name:"Local", img:"images/IMG_argentinaRetro_2010.jpg"}]},
+{season:"2011-12", kits:[{name:"Local", img:"images/IMG_argentinaRetro_1112.jpg"}]},
+{season:"2006-07", kits:[{name:"Local", img:"images/IMG_argentinaRetro_0607.jpg"}]},
+{season:"2001", kits:[{name:"Maradona", img:"images/IMG_argentinaRetro_01M.jpg"}]},
+{season:"2000-01", kits:[{name:"Local", img:"images/IMG_argentinaRetro_0001.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_argentinaRetro_9899.jpg"},{name:"2º Kit 1998-99", img:"images/IMG_argentinaRetro_AR_9899_b.jpg"}]},
+{season:"1994-95", kits:[{name:"Local", img:"images/IMG_argentinaRetro_9495.jpg"}]},
+{season:"1993-94", kits:[{name:"Local", img:"images/IMG_argentinaRetro_9394.jpg"}]},
+{season:"1986-87", kits:[{name:"Local", img:"images/IMG_argentinaRetro_8687.jpg"},{name:"2º Kit 1986-87", img:"images/IMG_argentinaRetro_AR_8687_b.jpg"}]},
+{season:"1978-79", kits:[{name:"Local", img:"images/IMG_argentinaRetro_7879.jpg"}]}
+];
+const benfica = [
+{season:"2013-14", kits:[{name:"Local", img:"images/IMG_benfica_1314.jpg"}]},
+{season:"2009-10", kits:[{name:"Local", img:"images/IMG_benfica_0910.jpg"}]},
+{season:"2007-08", kits:[{name:"Local", img:"images/IMG_benfica_0708.jpg"}]},
+{season:"2002-03", kits:[{name:"Local", img:"images/IMG_benfica_0203.jpg"}]},
+{season:"1999-00", kits:[{name:"Local", img:"images/IMG_benfica_9900.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_benfica_9899.jpg"},{name:"2º Kit 1998-99", img:"images/IMG_benfica_BF_9899_b.jpg"}]},
+{season:"1997-99", kits:[{name:"Local", img:"images/IMG_benfica_9799.jpg"}]},
+{season:"1997-98", kits:[{name:"Local", img:"images/IMG_benfica_9798.jpg"},{name:"2º Kit 1997-98", img:"images/IMG_benfica_BF_9798_b.jpg"}]},
+{season:"1994-95", kits:[{name:"Local", img:"images/IMG_benfica_9495.jpg"}]},
+{season:"1992-93", kits:[{name:"Local", img:"images/IMG_benfica_9293.jpg"}]},
+{season:"1990-91", kits:[{name:"Local", img:"images/IMG_benfica_9091.jpg"}]},
+{season:"1990", kits:[{name:"Local", img:"images/IMG_benfica_90.jpg"}]},
+{season:"1973-74", kits:[{name:"Local", img:"images/IMG_benfica_7374.jpg"},{name:"2º Kit 1973-74", img:"images/IMG_benfica_BF_7374_b.jpg"}]}
+];
+const romaRetro = [
+{season:"2014-15", kits:[{name:"Local", img:"images/IMG_romaRetro_1415.jpg"}]},
+{season:"2000-01", kits:[{name:"Local", img:"images/IMG_romaRetro_0001.jpg"},{name:"2º Kit 2000-01", img:"images/IMG_romaRetro_ROM_0001_b.jpg"}]},
+{season:"1999-00", kits:[{name:"Local", img:"images/IMG_romaRetro_9900.jpg"},{name:"2º Kit 1999-00", img:"images/IMG_romaRetro_ROM_9900_b.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_romaRetro_9899.jpg"},{name:"2º Kit 1998-99", img:"images/IMG_romaRetro_ROM_9899_b.jpg"}]},
+{season:"1997-98", kits:[{name:"Local", img:"images/IMG_romaRetro_9798.jpg"}]},
+{season:"1995-96", kits:[{name:"Local", img:"images/IMG_romaRetro_9596.jpg"},{name:"Pre-match", img:"images/IMG_romaRetro_9596b.jpg"}]},
+{season:"1992-94", kits:[{name:"Local", img:"images/IMG_romaRetro_9294.jpg"},{name:"2º Kit 1992-94", img:"images/IMG_romaRetro_ROM_9294_b.jpg"},{name:"3º Kit 1992-94", img:"images/IMG_romaRetro_ROM_9294_c.jpg"}]},
+{season:"1991-92", kits:[{name:"Local", img:"images/IMG_romaRetro_9192.jpg"},{name:"2º Kit 1991-92", img:"images/IMG_romaRetro_ROM_9192_b.jpg"},{name:"3º Kit 1991-92", img:"images/IMG_romaRetro_ROM_9192_c.jpg"}]},
+{season:"1989-90", kits:[{name:"Local", img:"images/IMG_romaRetro_8990.jpg"}]}
+];
+const chelseaRetro = [
+{season:"2014-15", kits:[{name:"Local", img:"images/IMG_chelseaRetro_1415.jpg"}]},
+{season:"2013-14", kits:[{name:"Local", img:"images/IMG_chelseaRetro_1314.jpg"}]},
+{season:"2011-12", kits:[{name:"Local", img:"images/IMG_chelseaRetro_1112.jpg"}]},
+{season:"2009-10", kits:[{name:"Local", img:"images/IMG_chelseaRetro_0910.jpg"}]},
+{season:"2007-08", kits:[{name:"Local", img:"images/IMG_chelseaRetro_0708.jpg"}]},
+{season:"2006-07", kits:[{name:"Local", img:"images/IMG_chelseaRetro_0607.jpg"}]},
+{season:"2004-05", kits:[{name:"Local", img:"images/IMG_chelseaRetro_0405.jpg"}]},
+{season:"1998-00", kits:[{name:"Local", img:"images/IMG_chelseaRetro_9800.jpg"},{name:"2º Kit 1998-00", img:"images/IMG_chelseaRetro_CHE_9800_b.jpg"},{name:"3º Kit 1998-00", img:"images/IMG_chelseaRetro_CHE_9800_c.jpg"}]},
+{season:"1997-99", kits:[{name:"Local", img:"images/IMG_chelseaRetro_9799.jpg"}]},
+{season:"1995-97", kits:[{name:"Local", img:"images/IMG_chelseaRetro_9597.jpg"},{name:"2º Kit 1995-97", img:"images/IMG_chelseaRetro_CHE_9597_b.jpg"}]},
+{season:"1994-96", kits:[{name:"Local", img:"images/IMG_chelseaRetro_9496.jpg"}]}
+];
+const arsenalRetro = [
+{season:"2014-15", kits:[{name:"Local", img:"images/IMG_arsenalRetro_1415.jpg"}]},
+{season:"2011-12", kits:[{name:"Local", img:"images/IMG_arsenalRetro_1112.jpg"}]},
+{season:"2007-08", kits:[{name:"Local", img:"images/IMG_arsenalRetro_0708.jpg"},{name:"2º Kit 2007-08", img:"images/IMG_arsenalRetro_ARS_0708_b.jpg"}]},
+{season:"2004-05", kits:[{name:"Local", img:"images/IMG_arsenalRetro_0405.jpg"}]},
+{season:"2003-04", kits:[{name:"Local", img:"images/IMG_arsenalRetro_0304.jpg"}]},
+{season:"2001-02", kits:[{name:"Local", img:"images/IMG_arsenalRetro_0102.jpg"}]},
+{season:"1999-00", kits:[{name:"Local", img:"images/IMG_arsenalRetro_9900.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_arsenalRetro_9899.jpg"}]},
+{season:"1996-97", kits:[{name:"Local", img:"images/IMG_arsenalRetro_9697.jpg"}]},
+{season:"1994-95", kits:[{name:"Local", img:"images/IMG_arsenalRetro_9495.jpg"}]},
+{season:"1992-94", kits:[{name:"Local", img:"images/IMG_arsenalRetro_9294.jpg"}]},
+{season:"1988-90", kits:[{name:"Local", img:"images/IMG_arsenalRetro_8890.jpg"}]}
+];
+const napolesRetro = [
+{season:"2019-20", kits:[{name:"Local", img:"images/IMG_napolesRetro_1920.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_napolesRetro_9899.jpg"},{name:"2º Kit 1998-99", img:"images/IMG_napolesRetro_NAP_9899_b.jpg"}]},
+{season:"1993-94", kits:[{name:"Local", img:"images/IMG_napolesRetro_9394.jpg"}]},
+{season:"1991-93", kits:[{name:"Local", img:"images/IMG_napolesRetro_9193.jpg"}]},
+{season:"1990-91", kits:[{name:"Local", img:"images/IMG_napolesRetro_9091.jpg"},{name:"2º Kit 1990-91", img:"images/IMG_napolesRetro_NAP_9091_b.jpg"},{name:"3º Kit 1990-91", img:"images/IMG_napolesRetro_NAP_9091_c.jpg"}]},
+{season:"1988-89", kits:[{name:"Local", img:"images/IMG_napolesRetro_8889.jpg"},{name:"2º Kit 1988-89", img:"images/IMG_napolesRetro_NAP_8889_b.jpg"}]},
+{season:"1987-88", kits:[{name:"Local", img:"images/IMG_napolesRetro_8788.jpg"},{name:"2º Kit 1987-88", img:"images/IMG_napolesRetro_NAP_8788_b.jpg"}]},
+{season:"1986-87", kits:[{name:"Local", img:"images/IMG_napolesRetro_8687.jpg"}]}
+];
+const parmaRetro = [
+{season:"2002-03", kits:[{name:"Local", img:"images/IMG_parmaRetro_0203.jpg"},{name:"2º Kit 2002-03", img:"images/IMG_parmaRetro_PAR_0203_b.jpg"},{name:"3º Kit 2002-03", img:"images/IMG_parmaRetro_PAR_0203_c.jpg"}]},
+{season:"2001-02", kits:[{name:"Local", img:"images/IMG_parmaRetro_0102.jpg"},{name:"2º Kit 2001-02", img:"images/IMG_parmaRetro_PAR_0102_b.jpg"}]},
+{season:"1999-00", kits:[{name:"Local", img:"images/IMG_parmaRetro_9900.jpg"},{name:"2º Kit 1999-00", img:"images/IMG_parmaRetro_PAR_9900_b.jpg"},{name:"3º Kit 1999-00", img:"images/IMG_parmaRetro_PAR_9900_c.jpg"}]},
+{season:"1998-99", kits:[{name:"Local", img:"images/IMG_parmaRetro_9899.jpg"},{name:"2º Kit 1998-99", img:"images/IMG_parmaRetro_PAR_9899_b.jpg"}]},
+{season:"1995-97", kits:[{name:"Local", img:"images/IMG_parmaRetro_9597.jpg"},{name:"2º Kit 1995-97", img:"images/IMG_parmaRetro_PAR_9597_b.jpg"},{name:"3º Kit 1995-97", img:"images/IMG_parmaRetro_PAR_9597_c.jpg"}]},
+{season:"1993-95", kits:[{name:"Local", img:"images/IMG_parmaRetro_9395.jpg"},{name:"2º Kit 1993-95", img:"images/IMG_parmaRetro_PAR_9395_b.jpg"}]}
+];
+const tottenhamRetro = [
+{season:"2019-20", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_1920.jpg"}]},
+{season:"2018-19", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_1819.jpg"},{name:"2º Kit 2018-19", img:"images/IMG_tottenhamRetro_TOT_1819_b.jpg"}]},
+{season:"2009-10", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_0910.jpg"}]},
+{season:"1998", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_98.jpg"}]},
+{season:"1997-99", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_9799.jpg"}]},
+{season:"1995-97", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_9597.jpg"},{name:"2º Kit 1995-97", img:"images/IMG_tottenhamRetro_TOT_9597_b.jpg"}]},
+{season:"1994-95", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_9495.jpg"},{name:"2º Kit 1994-95", img:"images/IMG_tottenhamRetro_TOT_9495_b.jpg"}]},
+{season:"1994", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_94.jpg"}]},
+{season:"1992-94", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_9294.jpg"}]},
+{season:"1983-85", kits:[{name:"Local", img:"images/IMG_tottenhamRetro_8385.jpg"}]}
+];
+const seleccionesTeams = [
+  {name:"España", data:espana, ready:true, colors:["#C60B1E","#FFC400"]},
+  {name:"Alemania", data:alemaniaRetro, ready:true, colors:["#FFFFFF","#000000"]},
+  {name:"Argentina", data:argentinaRetro, ready:true, colors:["#75AADB","#FFFFFF"]},
+  {name:"Argelia", data:null, ready:false},
+  {name:"Austria", data:null, ready:false},
+  {name:"Bélgica", data:null, ready:false},
+  {name:"Brasil", data:brasilRetro, ready:true, colors:["#FFDF00","#009739"]},
+  {name:"Bulgaria", data:null, ready:false},
+  {name:"Camerún", data:null, ready:false},
+  {name:"Canadá", data:null, ready:false},
+  {name:"Checoslovaquia", data:null, ready:false},
+  {name:"Chile", data:null, ready:false},
+  {name:"Colombia", data:null, ready:false},
+  {name:"Corea", data:null, ready:false},
+  {name:"Croacia", data:null, ready:false},
+  {name:"Dinamarca", data:null, ready:false},
+  {name:"EEUU", data:null, ready:false},
+  {name:"Escocia", data:escociaRetro, ready:true, colors:["#0065BD","#FFFFFF"]},
+  {name:"Finlandia", data:null, ready:false},
+  {name:"Francia", data:null, ready:false},
+  {name:"Grecia", data:null, ready:false},
+  {name:"Holanda", data:null, ready:false},
+  {name:"Inglaterra", data:null, ready:false},
+  {name:"Irlanda", data:null, ready:false},
+  {name:"Islandia", data:null, ready:false},
+  {name:"Italia", data:null, ready:false},
+  {name:"Jamaica", data:null, ready:false},
+  {name:"Japón", data:null, ready:false},
+  {name:"Marruecos", data:null, ready:false},
+  {name:"México", data:null, ready:false},
+  {name:"Nigeria", data:null, ready:false},
+  {name:"Noruega", data:null, ready:false},
+  {name:"Polonia", data:null, ready:false},
+  {name:"Portugal", data:portugalRetro, ready:true, colors:["#046A38","#DA291C"]},
+  {name:"Rumanía", data:null, ready:false},
+  {name:"Senegal", data:null, ready:false},
+  {name:"Sudáfrica", data:null, ready:false},
+  {name:"Turquía", data:null, ready:false},
+  {name:"Venezuela", data:null, ready:false},
+  {name:"Yugoslavia", data:null, ready:false}
+];
+
+// ---------------------------------------------------------------------
+// PREMIER LEAGUE — los 20 clubes de la 2025-26 (estructura lista, a la espera de contenido)
+// ---------------------------------------------------------------------
+const premierTeams = [
+  "Arsenal FC","Manchester City","Manchester United","Aston Villa","Liverpool FC",
+  "AFC Bournemouth","Sunderland AFC","Crystal Palace","Brighton & Hove Albion","Chelsea FC",
+  "Fulham FC","Brentford FC","Nottingham Forest","Newcastle United","Everton FC",
+  "Tottenham Hotspur","West Ham United","Leeds United","Burnley FC","Wolverhampton Wanderers"
+].map(t=>({name:t, data:null, ready:false}));
+
+// (RCD Espanyol, Celta de Vigo y CA Osasuna ya estaban listos; se han incorporado directamente abajo)
+
+
+
+
+// ---------------------------------------------------------------------
+// NUEVAS LIGAS (escaneo RETRO completo) - estructura lista, a la espera de fotos
+// ---------------------------------------------------------------------
+const scottishTeams = [
+  {name:"Celtic Glasgow", data:null, ready:false},
+  {name:"Glasgow Rangers", data:glasgowRangers, ready:true, colors:["#1D3E7C","#FFFFFF"]}
+];
+
+const turkishTeams = [
+  {name:"Galatasaray", data:null, ready:false},
+  {name:"Fenerbahce", data:null, ready:false},
+  {name:"Besiktas", data:null, ready:false}
+];
+
+const portugueseTeams = [
+  {name:"Oporto", data:oporto, ready:true, colors:["#00447C","#FFFFFF"]},
+  {name:"Benfica", data:benfica, ready:true, colors:["#E52820","#FFFFFF"]},
+  {name:"Sporting Lisboa", data:null, ready:false}
+];
+
+const argentineTeams = [
+  {name:"Boca Juniors", data:null, ready:false},
+  {name:"River Plate", data:null, ready:false},
+  {name:"Newell's", data:null, ready:false},
+  {name:"Rosario Central", data:null, ready:false},
+  {name:"Atlético Rosario", data:null, ready:false}
+];
+
+const brazilianTeams = [
+  {name:"Corinthians", data:null, ready:false},
+  {name:"Santos", data:null, ready:false},
+  {name:"Flamengo", data:null, ready:false},
+  {name:"Fluminense", data:null, ready:false},
+  {name:"Palmeiras", data:null, ready:false},
+  {name:"Botafogo", data:null, ready:false},
+  {name:"Cruzeiro", data:null, ready:false},
+  {name:"Gremio", data:null, ready:false},
+  {name:"Vasco de Gama", data:null, ready:false}
+];
+
+const latamTeams = [
+  {name:"Club América", data:null, ready:false},
+  {name:"Chivas", data:chivas, ready:true, colors:["#B4122B","#00205B"]},
+  {name:"Toluca", data:null, ready:false},
+  {name:"Tigres", data:null, ready:false},
+  {name:"Colo Colo", data:null, ready:false},
+  {name:"Atlético Nacional", data:null, ready:false},
+  {name:"LA Galaxy", data:null, ready:false}
+];
+
+const dutchTeams = [
+  {name:"Ajax", data:null, ready:false},
+  {name:"PSV", data:null, ready:false}
+];
+
+const serieATeams2 = [
+  {name:"AC Milan", data:null, ready:false},
+  {name:"Atalanta", data:null, ready:false},
+  {name:"Bologna", data:null, ready:false},
+  {name:"Cagliari", data:null, ready:false},
+  {name:"Fiorentina", data:null, ready:false},
+  {name:"Inter Milan", data:interMilan, ready:true, colors:["#0068A8","#000000"]},
+  {name:"Juventus", data:null, ready:false},
+  {name:"Lazio", data:null, ready:false},
+  {name:"Nápoles", data:napolesRetro, ready:true, colors:["#12A0D7","#FFFFFF"]},
+  {name:"Parma", data:parmaRetro, ready:true, colors:["#FFD700","#002E62"]},
+  {name:"Perugia", data:null, ready:false},
+  {name:"Roma", data:romaRetro, ready:true, colors:["#8E1F2F","#F0BC42"]},
+  {name:"Sampdoria", data:null, ready:false},
+  {name:"Sassuolo", data:null, ready:false},
+  {name:"Brescia", data:null, ready:false},
+  {name:"Venecia", data:null, ready:false}
+];
+
+const bundesligaTeams2 = [
+  {name:"B. Monchengladbach", data:null, ready:false},
+  {name:"Bayern Leverkusen", data:null, ready:false},
+  {name:"Bayern Múnich", data:bayernMunichRetro, ready:true, colors:["#DC052D","#0066B2"]},
+  {name:"Borussia Dortmund", data:null, ready:false},
+  {name:"Düsseldorf", data:null, ready:false},
+  {name:"Eintratch Frankfurt", data:null, ready:false},
+  {name:"Freiburg", data:null, ready:false},
+  {name:"Hamburgo", data:null, ready:false},
+  {name:"Hannover96", data:null, ready:false},
+  {name:"Kaiserslautern", data:null, ready:false},
+  {name:"Köln", data:null, ready:false},
+  {name:"MSV Duisburg", data:null, ready:false},
+  {name:"Schalke 04", data:null, ready:false},
+  {name:"St Pauli", data:null, ready:false},
+  {name:"Stuttgart", data:null, ready:false},
+  {name:"Werder Bremen", data:null, ready:false},
+  {name:"Wolfsburgo", data:null, ready:false}
+];
+
+const premierExtraTeams = [
+  {name:"Arsenal", data:arsenalRetro, ready:true, colors:["#EF0107","#FFFFFF"]},
+  {name:"Aston Villa", data:null, ready:false},
+  {name:"Birmingham", data:null, ready:false},
+  {name:"Chelsea", data:chelseaRetro, ready:true, colors:["#034694","#FFFFFF"]},
+  {name:"Coventry City", data:null, ready:false},
+  {name:"Crystal Palace", data:null, ready:false},
+  {name:"Derby Country", data:null, ready:false},
+  {name:"Everton", data:null, ready:false},
+  {name:"Fullham", data:null, ready:false},
+  {name:"Hull City", data:null, ready:false},
+  {name:"Leeds United", data:null, ready:false},
+  {name:"Leicester", data:null, ready:false},
+  {name:"Liverpool", data:null, ready:false},
+  {name:"Manchester City", data:null, ready:false},
+  {name:"Manchester United", data:manUnited, ready:true, colors:["#DA291C","#FBE122"]},
+  {name:"Newcastle", data:null, ready:false},
+  {name:"Nottingham Forest", data:null, ready:false},
+  {name:"Sheffield Wednesday", data:null, ready:false},
+  {name:"Southampton", data:null, ready:false},
+  {name:"Sunderland", data:null, ready:false},
+  {name:"Tottenham", data:tottenhamRetro, ready:true, colors:["#132257","#FFFFFF"]},
+  {name:"West Ham", data:null, ready:false},
+  {name:"Wolves", data:null, ready:false}
+];
+
+const ligue1Teams2 = [
+  {name:"Girondins", data:null, ready:false},
+  {name:"O. Lyon", data:null, ready:false},
+  {name:"O. Marsella", data:null, ready:false},
+  {name:"OGC Nice", data:null, ready:false},
+  {name:"PSG", data:null, ready:false},
+  {name:"Cannes", data:null, ready:false}
+];
+
+const spanishExtraTeams = [
+  {name:"Málaga", data:null, ready:false},
+  {name:"Las Palmas", data:null, ready:false},
+  {name:"Racing de Santander", data:null, ready:false},
+  {name:"Zaragoza", data:null, ready:false},
+  {name:"Deportivo de La Coruña", data:null, ready:false},
+  {name:"Córdoba", data:null, ready:false},
+  {name:"Compostela", data:null, ready:false},
+  {name:"Tenerife", data:null, ready:false},
+  {name:"Sporting de Gijón", data:null, ready:false},
+  {name:"Albacete", data:null, ready:false},
+  {name:"Ceuta", data:null, ready:false},
+  {name:"Murcia", data:null, ready:false},
+  {name:"Valladolid", data:null, ready:false}
+];
+
+const otherClubsTeams = [
+  {name:"Olympiacos", data:null, ready:false}
+];
+
+
+// ---------------------------------------------------------------------
+// INTER MILAN (RETRO)
+// ---------------------------------------------------------------------
+const leagues = [
+  {
+    name:"Liga Española",
+    collapsed:true,
+    comingSoon:false,
+    teams:[
+      {name:"Real Madrid", data:realMadrid, ready:true, colors:["#FFFFFF","#FEBE10"]},
+      {name:"FC Barcelona", data:barcelona, ready:true, colors:["#A50044","#004D98"]},
+      {name:"Atlético Madrid", data:atletico, ready:true, colors:["#CB3524","#FFFFFF"]},
+      {name:"Sevilla FC", data:sevilla, ready:true, colors:["#FFFFFF","#D2001C"]},
+      {name:"Real Betis", data:realBetis, ready:true, colors:["#00954C","#FFFFFF"]},
+      {name:"Athletic Club", data:athletic, ready:true, colors:["#EE2523","#FFFFFF"]},
+      {name:"Valencia CF", data:valencia, ready:true, colors:["#FFFFFF","#FF6600"]},
+      {name:"Villarreal CF", data:villarreal, ready:true, colors:["#FFE667","#0F3C7D"]},
+      {name:"Real Sociedad", data:realSociedad, ready:true, colors:["#0066B3","#FFFFFF"]},
+      {name:"Getafe CF", data:getafe, ready:true, colors:["#0A5EB0","#FFFFFF"]},
+      {name:"Girona FC", data:girona, ready:true, colors:["#CB1E2A","#FFFFFF"]},
+      {name:"Deportivo Alavés", data:alaves, ready:true, colors:["#0F3B82","#FFFFFF"]},
+      {name:"RCD Espanyol", data:espanyol, ready:true, colors:["#0A4C9C","#FFFFFF"]},
+      {name:"Celta de Vigo", data:celta, ready:true, colors:["#8AC3EE","#FFFFFF"]},
+      {name:"CA Osasuna", data:osasuna, ready:true, colors:["#D2001C","#001A72"]},
+      {name:"Rayo Vallecano", data:rayoVallecano, ready:true, colors:["#FFFFFF","#E30613"]},
+      {name:"RCD Mallorca", data:mallorca, ready:true, colors:["#CB1517","#000000"]},
+      {name:"Levante UD", data:levanteUD, ready:true, colors:["#00285E","#B4002A"]},
+      {name:"Elche CF", data:elcheCF, ready:true, colors:["#00954C","#FFFFFF"]},
+      {name:"Real Oviedo", data:realOviedo, ready:true, colors:["#0057A8","#FFFFFF"]},
+    ]
+  },
+  {name:"Selecciones", collapsed:true, comingSoon:false, teams:seleccionesTeams},
+  {name:"Premier League", collapsed:true, comingSoon:false, teams:[...premierTeams, ...premierExtraTeams]},
+  {name:"Serie A", collapsed:true, comingSoon:false, teams:serieATeams2},
+  {name:"Bundesliga", collapsed:true, comingSoon:false, teams:bundesligaTeams2},
+  {name:"Ligue 1", collapsed:true, comingSoon:false, teams:ligue1Teams2},
+  {name:"Liga Escocesa", collapsed:true, comingSoon:false, teams:scottishTeams},
+  {name:"Superliga Turca", collapsed:true, comingSoon:false, teams:turkishTeams},
+  {name:"Primeira Liga (Portugal)", collapsed:true, comingSoon:false, teams:portugueseTeams},
+  {name:"Eredivisie", collapsed:true, comingSoon:false, teams:dutchTeams},
+  {name:"Liga Argentina", collapsed:true, comingSoon:false, teams:argentineTeams},
+  {name:"Liga Brasileña", collapsed:true, comingSoon:false, teams:brazilianTeams},
+  {name:"Otros Clubes de América", collapsed:true, comingSoon:false, teams:latamTeams},
+  {name:"Más Clubes de LaLiga (histórico)", collapsed:true, comingSoon:false, teams:spanishExtraTeams},
+  {name:"Otros Clubes", collapsed:true, comingSoon:false, teams:otherClubsTeams},
+];
+
+// ---------------------------------------------------------------------
+// RENDER
+// ---------------------------------------------------------------------
+const nav = document.getElementById('teamNav');
+const main = document.getElementById('main');
+const searchInput = document.getElementById('searchInput');
+const searchCount = document.getElementById('searchCount');
+
+function shirtIcon(colors){
+  const [c1,c2] = colors || ['#3a4a42','#2a3630'];
+  return `<div class="placeholder-icon">${jerseySVG(c1,c2)}<div>Foto pendiente</div></div>`;
+}
+
+// Draws a simple two-tone jersey using the team's real colors. Renders instantly,
+// with zero external dependency — used whenever a hotlinked photo isn't available or fails.
+function jerseySVG(c1, c2){
+  return `<svg width="70" height="70" viewBox="0 0 100 100">
+    <path d="M30 8 L10 22 L18 38 L28 32 L28 90 L72 90 L72 32 L82 38 L90 22 L70 8 L60 16 L40 16 Z" fill="${c1}" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>
+    <path d="M30 8 L10 22 L18 38 L28 32 Z M70 8 L90 22 L82 38 L72 32 Z" fill="${c2}"/>
+    <path d="M40 16 Q50 24 60 16 L58 26 Q50 32 42 26 Z" fill="${c2}"/>
+  </svg>`;
+}
+
+// Called when a hotlinked photo fails to load — swaps it for our own drawn jersey
+// in the team's real colors, so there's always something meaningful to see.
+function imgFallback(imgEl, c1, c2){
+  const wrap = imgEl.closest('.kit-photo');
+  if(!wrap) return;
+  wrap.innerHTML = `<div class="placeholder-icon">${jerseySVG(c1||'#3a4a42', c2||'#2a3630')}<div>Foto no disponible aquí</div></div>`;
+}
+
+// Click-to-zoom: opens the photo larger in an overlay. Never navigates anywhere.
+const lightbox = document.getElementById('lightbox');
+const lightboxCap = document.getElementById('lightboxCap');
+function openLightbox(src, caption, src2){
+  const slot = document.getElementById('lightboxImg');
+  if(src2){
+    slot.outerHTML = `<div id="lightboxImg" style="display:flex; gap:18px; align-items:center;">
+      <img src="${src}" style="max-width:min(42vw,420px); max-height:80vh; object-fit:contain; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.5);">
+      <img src="${src2}" style="max-width:min(42vw,420px); max-height:80vh; object-fit:contain; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    </div>`;
+  } else {
+    slot.outerHTML = `<img id="lightboxImg" src="${src}" style="max-width:min(88vw,560px); max-height:86vh; object-fit:contain; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.5);">`;
+  }
+  lightboxCap.textContent = caption;
+  lightbox.classList.add('open');
+}
+function closeLightbox(){
+  lightbox.classList.remove('open');
+}
+lightbox.addEventListener('click', closeLightbox);
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeLightbox(); });
+
+// Removes accents/diacritics and lowercases, so "atlético" == "atletico".
+function normalize(s){
+  return (s||"").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+let viewMode = 'todo';
+function isRealSeason(name){ return /^\d{4}-\d{2,4}$/.test(name); }
+
+function renderTeam(team, filterText){
+  main.innerHTML = "";
+  if(!team.ready){
+    main.innerHTML = `<div class="empty-state">
+      <h2 style="color:var(--chalk); margin-bottom:10px;">${team.name}</h2>
+      <p>Este equipo todavía no está cargado. La estructura <b>Liga → Equipo → Año → Equipación</b> ya está lista para recibirlo — dime "sigue con ${team.name}" y lo añadimos con el mismo formato que Real Madrid, FC Barcelona o Atlético Madrid.</p>
+    </div>`;
+    return;
+  }
+  const tokens = normalize(filterText).split(/\s+/).filter(Boolean);
+  const teamNorm = normalize(team.name);
+  const head = document.createElement('div');
+  const totalKits = team.data.reduce((a,s)=>a+s.kits.length,0);
+  const readyKits = team.data.reduce((a,s)=>a+s.kits.filter(k=>k.img).length,0);
+  const hasSpecials = team.data.some(s=>!isRealSeason(s.season));
+  head.innerHTML = `
+    <div class="team-head"><h2>${team.name}</h2><span class="count">${team.data.length} temporadas · ${totalKits} equipaciones</span></div>
+    <div class="legend">
+      <span><span class="dot ready"></span>${readyKits} con foto real</span>
+      <span><span class="dot pending"></span>${totalKits-readyKits} pendientes de foto</span>
+    </div>
+    ${hasSpecials ? `<div class="view-toggle">
+      <button data-mode="todo" class="${viewMode==='todo'?'active':''}">Todo</button>
+      <button data-mode="temporada" class="${viewMode==='temporada'?'active':''}">Temporada</button>
+      <button data-mode="especiales" class="${viewMode==='especiales'?'active':''}">Especiales</button>
+    </div>` : ''}`;
+  main.appendChild(head);
+
+  if(hasSpecials){
+    head.querySelectorAll('.view-toggle button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        viewMode = btn.dataset.mode;
+        renderTeam(team, searchInput.value);
+      });
+    });
+  } else {
+    viewMode = 'todo';
+  }
+
+  let shown = 0;
+  const visibleData = team.data.filter(season=>{
+    if(viewMode==='temporada') return isRealSeason(season.season);
+    if(viewMode==='especiales') return !isRealSeason(season.season);
+    return true;
+  });
+  visibleData.forEach(season=>{
+    const seasonNorm = normalize(season.season);
+    const kits = season.kits.filter(k=>{
+      if(tokens.length===0) return true;
+      const combined = teamNorm + " " + seasonNorm + " " + normalize(k.name);
+      // every typed word must appear somewhere (team name, season, or kit name)
+      return tokens.every(t=>combined.includes(t));
+    });
+    if(kits.length===0) return;
+    shown += kits.length;
+    const block = document.createElement('div');
+    block.className = 'season-block';
+    const grid = kits.map(k=>{
+      const ready = !!k.img;
+      const resolve = (u)=> u.startsWith('http')||u.startsWith('data:')||u.startsWith('images/') ? u : REAL_IMG+u;
+      const proxied = (u)=> (u.startsWith('data:')||!u.includes('footballkitarchive.com')) ? u : `https://wsrv.nl/?url=${encodeURIComponent(u)}&default=1`;
+      const src = ready ? proxied(resolve(k.img)) : '';
+      const hasBack = ready && !!k.imgBack;
+      const src2 = hasBack ? proxied(resolve(k.imgBack)) : '';
+      const c1 = (team.colors && team.colors[0]) || '#3a4a42';
+      const c2 = (team.colors && team.colors[1]) || '#2a3630';
+      const label = (team.name+' '+k.name).replace(/'/g,"");
+      const onclick = ready ? `onclick="openLightbox('${src.replace(/'/g,"")}','${label}'${hasBack?`,'${src2.replace(/'/g,"")}'`:''})"` : '';
+      const onerr = ready ? `onerror="imgFallback(this,'${c1}','${c2}')"` : '';
+      const onerr2 = hasBack ? `onerror="this.style.display='none'"` : '';
+      const photoInner = !ready ? shirtIcon(team.colors)
+        : hasBack
+          ? `<img class="front" src="${src}" alt="${k.name}" loading="lazy" referrerpolicy="no-referrer" ${onclick} ${onerr}><img class="back" src="${src2}" alt="${k.name} (espalda)" loading="lazy" referrerpolicy="no-referrer" ${onclick} ${onerr2}>`
+          : `<img src="${src}" alt="${k.name}" loading="lazy" referrerpolicy="no-referrer" ${onclick} ${onerr}>`;
+      return `<div class="kit-card ${ready?'ready':'pending'}">
+        <div class="kit-photo${hasBack?' has-back':''}">${photoInner}</div>
+        <div class="kit-label"><div class="name">${team.name} ${k.name}</div><div class="status">${ready?'Foto real':'Pendiente'}</div>${hasBack?'<div class="flip-hint">Pasa el ratón: espalda</div>':''}</div>
+      </div>`;
+    }).join('');
+    const tag = isRealSeason(season.season) ? `<span class="yr-badge">${season.season}</span> Temporada ${season.season}` : `<span class="yr-badge">★</span> ${season.season}`;
+    block.innerHTML = `<div class="season-tag">${tag}</div>
+      <div class="kit-grid">${grid}</div>`;
+    main.appendChild(block);
+  });
+
+  if(tokens.length>0 && shown===0){
+    main.innerHTML += `<div class="empty-state"><p>Ningún resultado para "<b>${filterText}</b>" dentro de ${team.name}.</p></div>`;
+  } else if(shown===0 && visibleData.length===0){
+    const msg = viewMode==='temporada' ? 'Sin temporadas normales para mostrar.' : 'Sin ediciones especiales para mostrar.';
+    main.innerHTML += `<div class="empty-state"><p>${msg}</p></div>`;
+  }
+}
+
+// Given the typed tokens, find which team (if any) is being referred to,
+// so the search can "jump" to it (e.g. "atletico 23" -> Atlético Madrid).
+function findTeamMatch(tokens){
+  if(tokens.length===0) return null;
+  let best = null, bestScore = 0;
+  allTeams().forEach(team=>{
+    if(!team.ready) return;
+    const words = normalize(team.name).split(/\s+/).filter(Boolean);
+    const score = tokens.filter(t=> words.some(w=>w.startsWith(t) || t.startsWith(w))).length;
+    if(score > bestScore){ bestScore = score; best = team; }
+  });
+  return best;
+}
+
+function allTeams(){
+  return leagues.flatMap(l=>l.teams||[]);
+}
+
+let currentTeam = null;
+
+function buildSidebar(){
+  nav.innerHTML = "";
+  leagues.forEach(league=>{
+    const group = document.createElement('div');
+    group.className = 'league-group';
+
+    const headBtn = document.createElement('button');
+    headBtn.className = 'league-head' + (league.collapsed ? ' collapsed' : '');
+    headBtn.innerHTML = `<span class="chev">▾</span><span>${league.name}</span>${league.comingSoon ? '<span class="badge">Próx.</span>' : `<span class="badge">${league.teams.length}</span>`}`;
+    const body = document.createElement('div');
+    body.className = 'league-body' + (league.collapsed ? ' collapsed' : '');
+
+    if(league.comingSoon){
+      body.innerHTML = `<div class="no-match" style="padding:4px 12px 10px;">Próximamente</div>`;
+    } else {
+      league.teams.forEach((team, i)=>{
+        const btn = document.createElement('button');
+        btn.className = 'team-btn' + (!team.ready?' locked':'');
+        btn.dataset.name = normalize(team.name);
+        btn.innerHTML = `<span class="num">${String(i+1).padStart(2,'0')}</span><span>${team.name}</span>${!team.ready?'<span class="lock-tag">Próx.</span>':''}`;
+        btn.addEventListener('click', ()=>{
+          document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          currentTeam = team;
+          renderTeam(team, searchInput.value);
+          if(typeof closeMobileNav === 'function'){
+            const label = document.getElementById('navToggleLabel');
+            if(label) label.textContent = team.name;
+            closeMobileNav();
+          }
+        });
+        body.appendChild(btn);
+        if(i===0 && !currentTeam){ currentTeam = team; }
+      });
+    }
+
+    headBtn.addEventListener('click', ()=>{
+      league.collapsed = !league.collapsed;
+      headBtn.classList.toggle('collapsed', league.collapsed);
+      body.classList.toggle('collapsed', league.collapsed);
+    });
+
+    group.appendChild(headBtn);
+    group.appendChild(body);
+    nav.appendChild(group);
+  });
+
+  // activate first team by default
+  const firstBtn = nav.querySelector('.team-btn:not(.locked)');
+  if(firstBtn) firstBtn.classList.add('active');
+}
+
+buildSidebar();
+renderTeam(currentTeam, "");
+
+// ---------------------------------------------------------------------
+// MOBILE DROPDOWN MENU (hamburger toggle for the team sidebar)
+// ---------------------------------------------------------------------
+const navToggle = document.getElementById('navToggle');
+const navBackdrop = document.getElementById('navBackdrop');
+
+function positionMobileNav(){
+  const headerEl = document.querySelector('header');
+  const rect = headerEl.getBoundingClientRect();
+  nav.style.top = Math.max(0, rect.bottom) + 'px';
+}
+
+function openMobileNav(){
+  positionMobileNav();
+  nav.classList.add('mobile-open');
+  navToggle.classList.add('open');
+  navToggle.setAttribute('aria-expanded', 'true');
+  navBackdrop.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileNav(){
+  nav.classList.remove('mobile-open');
+  navToggle.classList.remove('open');
+  navToggle.setAttribute('aria-expanded', 'false');
+  navBackdrop.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+if(navToggle){
+  navToggle.addEventListener('click', ()=>{
+    if(nav.classList.contains('mobile-open')) closeMobileNav();
+    else openMobileNav();
+  });
+}
+if(navBackdrop){
+  navBackdrop.addEventListener('click', closeMobileNav);
+}
+window.addEventListener('resize', ()=>{
+  if(nav.classList.contains('mobile-open')) positionMobileNav();
+  if(window.innerWidth > 880) closeMobileNav();
+});
+
+// ---------------------------------------------------------------------
+// SEARCH
+// ---------------------------------------------------------------------
+function activateTeamButton(team){
+  document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('active'));
+  const btn = [...document.querySelectorAll('.team-btn')].find(b=>b.dataset.name===normalize(team.name));
+  if(btn){
+    btn.classList.add('active');
+    // make sure its league group is expanded
+    const group = btn.closest('.league-group');
+    if(group){
+      const body = group.querySelector('.league-body');
+      const head = group.querySelector('.league-head');
+      body.classList.remove('collapsed');
+      head.classList.remove('collapsed');
+    }
+  }
+}
+
+searchInput.addEventListener('input', ()=>{
+  const rawQ = searchInput.value;
+  const tokens = normalize(rawQ).split(/\s+/).filter(Boolean);
+
+  // If the query names a team (accent-insensitive), jump to it — e.g. "atletico 23" -> Atlético Madrid.
+  const matchedTeam = findTeamMatch(tokens);
+  if(matchedTeam && matchedTeam !== currentTeam){
+    currentTeam = matchedTeam;
+    activateTeamButton(matchedTeam);
+  }
+
+  // filter sidebar team list by name (accent-insensitive)
+  let visibleCount = 0;
+  document.querySelectorAll('.team-btn').forEach(btn=>{
+    const match = tokens.length===0 || tokens.some(t=>btn.dataset.name.includes(t));
+    btn.classList.toggle('hidden', !match);
+    if(match) visibleCount++;
+  });
+  // auto-expand league groups that have matches while searching
+  document.querySelectorAll('.league-group').forEach(group=>{
+    const body = group.querySelector('.league-body');
+    const head = group.querySelector('.league-head');
+    if(!body || body.querySelectorAll('.team-btn').length===0) return;
+    const anyVisible = [...body.querySelectorAll('.team-btn')].some(b=>!b.classList.contains('hidden'));
+    if(tokens.length>0){
+      body.classList.toggle('collapsed', !anyVisible);
+      head.classList.toggle('collapsed', !anyVisible);
+    }
+  });
+
+  if(currentTeam){
+    renderTeam(currentTeam, rawQ);
+  }
+
+  if(tokens.length===0){
+    searchCount.textContent = "";
+  } else {
+    searchCount.textContent = `${visibleCount} equipo(s) coinciden en la barra lateral · resultados filtrados dentro de ${currentTeam ? currentTeam.name : ''}`;
+  }
+});
+</script>
+</body>
+</html>

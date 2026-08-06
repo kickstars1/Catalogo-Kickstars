@@ -357,105 +357,6 @@
     .eyebrow{font-size:10px;}
     .kit-grid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));}
   }
-
-  /* ----------------------------------------------------------------
-     WELCOME / LANDING SCREEN
-  ---------------------------------------------------------------- */
-  .welcome{
-    max-width:920px;
-    padding:10px 0 40px;
-  }
-  .welcome-badge{
-    display:inline-flex; align-items:center; gap:8px;
-    font-family:Georgia, 'Times New Roman', serif; font-style:italic;
-    letter-spacing:.12em; text-transform:uppercase; font-size:11px;
-    color:var(--gold);
-    background:rgba(212,167,44,0.08);
-    border:1px solid var(--gold-dim);
-    padding:6px 14px; border-radius:999px;
-    margin-bottom:18px;
-  }
-  .welcome h2{
-    margin:0 0 14px;
-    font-size:clamp(26px,4vw,38px);
-    font-weight:800;
-    letter-spacing:-0.02em;
-    line-height:1.12;
-  }
-  .welcome h2 span{color:var(--gold);}
-  .welcome > p.lead{
-    max-width:640px;
-    color:var(--chalk-dim);
-    font-size:15px;
-    line-height:1.65;
-    margin:0 0 32px;
-  }
-  .welcome-steps{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:14px;
-    margin-bottom:34px;
-  }
-  .welcome-step{
-    background:var(--card);
-    border:1px solid var(--card-line);
-    border-radius:12px;
-    padding:18px 18px 20px;
-    transition:border-color .15s, transform .15s;
-  }
-  .welcome-step:hover{border-color:var(--gold-dim); transform:translateY(-2px);}
-  .welcome-step .step-num{
-    display:inline-flex; align-items:center; justify-content:center;
-    width:26px; height:26px; border-radius:50%;
-    background:var(--gold); color:#1a1a0a;
-    font-size:12px; font-weight:800;
-    margin-bottom:12px;
-  }
-  .welcome-step h3{
-    margin:0 0 6px; font-size:14.5px; font-weight:700; color:var(--chalk);
-  }
-  .welcome-step p{
-    margin:0; font-size:12.5px; line-height:1.55; color:var(--chalk-dim);
-  }
-  .welcome-modes{
-    display:flex; flex-wrap:wrap; gap:8px;
-    margin:6px 0 34px;
-  }
-  .welcome-modes span{
-    font-size:11px; font-weight:700; letter-spacing:.03em;
-    background:var(--card); border:1px solid var(--card-line);
-    color:var(--chalk-dim);
-    padding:6px 13px; border-radius:6px;
-  }
-  .welcome-modes span b{color:var(--gold); font-weight:800;}
-  .welcome-footer{
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:18px;
-    padding-top:26px;
-    border-top:1px solid var(--card-line);
-  }
-  .welcome-footer p{
-    margin:0; font-size:12.5px; color:var(--chalk-dim); max-width:420px; line-height:1.55;
-  }
-  .welcome-ig{
-    display:inline-flex; align-items:center; gap:10px;
-    background:var(--card);
-    border:1px solid var(--card-line);
-    color:var(--chalk);
-    text-decoration:none;
-    font-size:13.5px; font-weight:700;
-    padding:10px 18px 10px 12px;
-    border-radius:999px;
-    transition:border-color .15s, background .15s;
-    flex:none;
-  }
-  .welcome-ig:hover{border-color:var(--gold-dim); background:var(--card-line);}
-  .welcome-ig .ig-icon{width:26px; height:26px; flex:none;}
-  .welcome-ig .ig-text{display:flex; flex-direction:column; line-height:1.25;}
-  .welcome-ig .ig-text small{font-size:9.5px; color:var(--gold-dim); font-weight:600; letter-spacing:.04em; text-transform:uppercase;}
-  @media (max-width: 640px){
-    .welcome-footer{flex-direction:column; align-items:flex-start;}
-  }
 </style>
 </head>
 <body>
@@ -3361,75 +3262,6 @@ function renderTeam(team, filterText){
   }
 }
 
-// -----------------------------------------------------------------------
-// WELCOME / LANDING SCREEN — shown before the customer has picked a team.
-// -----------------------------------------------------------------------
-function renderWelcome(){
-  const igIcon = `<svg class="ig-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#feda75"/>
-        <stop offset="25%" stop-color="#d4a72c"/>
-        <stop offset="55%" stop-color="#c13584"/>
-        <stop offset="80%" stop-color="#833ab4"/>
-        <stop offset="100%" stop-color="#5851db"/>
-      </linearGradient>
-    </defs>
-    <rect x="2" y="2" width="20" height="20" rx="6" fill="none" stroke="url(#igGrad)" stroke-width="2"/>
-    <circle cx="12" cy="12" r="4.6" fill="none" stroke="url(#igGrad)" stroke-width="2"/>
-    <circle cx="17.1" cy="6.9" r="1.15" fill="url(#igGrad)"/>
-  </svg>`;
-
-  main.innerHTML = `
-    <div class="welcome">
-      <p class="welcome-badge">Bienvenido a KickStars.club</p>
-      <h2>El <span>catálogo</span> completo de KickStars</h2>
-      <p class="lead">Aquí puedes ver, en fotos reales, todas las camisetas y equipaciones disponibles: ligas, selecciones
-      nacionales, temporadas actuales, retro y ediciones especiales. Elige un equipo en el menú lateral para empezar a
-      mirar, o usa el buscador para ir directo a lo que quieres.</p>
-
-      <div class="welcome-steps">
-        <div class="welcome-step">
-          <span class="step-num">1</span>
-          <h3>Elige liga y equipo</h3>
-          <p>En el menú de la izquierda, despliega una liga o selección y toca el equipo que te interesa.</p>
-        </div>
-        <div class="welcome-step">
-          <span class="step-num">2</span>
-          <h3>Filtra por categoría</h3>
-          <p>Dentro de cada equipo hay pestañas: Actuales, Retro, Especiales, Chándales, Niños y Mujer.</p>
-        </div>
-        <div class="welcome-step">
-          <span class="step-num">3</span>
-          <h3>Busca directamente</h3>
-          <p>Escribe un equipo, temporada o tipo de equipación en el buscador de arriba para saltar directo ahí.</p>
-        </div>
-        <div class="welcome-step">
-          <span class="step-num">4</span>
-          <h3>Amplía la foto</h3>
-          <p>Toca cualquier foto para verla en grande. Algunas tienen imagen frontal y trasera al pasar el cursor.</p>
-        </div>
-      </div>
-
-      <div class="welcome-modes">
-        <span><b>Actuales</b> · últimas temporadas, solo oficiales</span>
-        <span><b>Retro</b> · temporadas antiguas</span>
-        <span><b>Especiales</b> · ediciones y merchandising</span>
-        <span><b>Chándales</b></span>
-        <span><b>Niños</b></span>
-        <span><b>Mujer</b></span>
-      </div>
-
-      <div class="welcome-footer">
-        <p>¿Dudas, pedidos o disponibilidad? Escríbenos por Instagram, respondemos por ahí.</p>
-        <a class="welcome-ig" href="https://www.instagram.com/kickstars.club" target="_blank" rel="noopener">
-          ${igIcon}
-          <span class="ig-text"><small>Síguenos</small>@kickstars.club</span>
-        </a>
-      </div>
-    </div>`;
-}
-
 // Given the typed tokens, find which team (if any) is being referred to,
 // so the search can "jump" to it (e.g. "atletico 23" -> Atlético Madrid).
 function findTeamMatch(tokens){
@@ -3482,6 +3314,7 @@ function buildSidebar(){
           }
         });
         body.appendChild(btn);
+        if(i===0 && !currentTeam){ currentTeam = team; }
       });
     }
 
@@ -3496,10 +3329,13 @@ function buildSidebar(){
     nav.appendChild(group);
   });
 
+  // activate first team by default
+  const firstBtn = nav.querySelector('.team-btn:not(.locked)');
+  if(firstBtn) firstBtn.classList.add('active');
 }
 
 buildSidebar();
-renderWelcome();
+renderTeam(currentTeam, "");
 
 // ---------------------------------------------------------------------
 // MOBILE DROPDOWN MENU (hamburger toggle for the team sidebar)

@@ -101,21 +101,16 @@
     width:100%;
     background:none; border:none; cursor:pointer;
     color:var(--gold);
-    font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
     padding:12px 10px 8px;
     font-family:inherit;
   }
   .league-head .chev{
-    flex:none;
     transition:transform .15s;
     font-size:9px;
     color:var(--gold-dim);
   }
   .league-head.collapsed .chev{transform:rotate(-90deg);}
-  .league-head .league-name{
-    flex:1; min-width:0;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
   .league-head .badge{
     margin-left:auto; font-size:9px; letter-spacing:.05em; text-transform:none;
     color:var(--chalk-dim); font-weight:400;
@@ -434,7 +429,7 @@
     line-height:1.65;
     margin:0 0 22px;
   }
-  .welcome-cta-center{display:flex; justify-content:center; max-width:560px; margin-top:4px;}
+  .welcome-cta-center{display:flex; justify-content:center; margin-top:4px;}
   .welcome-ig-big{
     display:inline-flex; align-items:center; gap:12px;
     background:linear-gradient(120deg,#feda75,#d4a72c 22%,#c13584 58%,#833ab4 82%,#5851db);
@@ -3156,7 +3151,7 @@ const leagues = [
   {name:"Eredivisie", collapsed:true, comingSoon:false, teams:dutchTeams},
   {name:"Liga Argentina", collapsed:true, comingSoon:false, teams:argentineTeams},
   {name:"Liga Brasileña", collapsed:true, comingSoon:false, teams:brazilianTeams},
-  {name:"Más Clubes de América", collapsed:true, comingSoon:false, teams:latamTeams},
+  {name:"Otros Clubes de América", collapsed:true, comingSoon:false, teams:latamTeams},
   {name:"Más Clubes de LaLiga", collapsed:true, comingSoon:false, teams:spanishExtraTeams},
   {name:"Otros Clubes", collapsed:true, comingSoon:false, teams:otherClubsTeams},
   {name:"Liga Árabe", collapsed:true, comingSoon:false, teams:saudiTeams},
@@ -3601,7 +3596,7 @@ function buildSidebar(){
 
     const headBtn = document.createElement('button');
     headBtn.className = 'league-head' + (league.collapsed ? ' collapsed' : '');
-    headBtn.innerHTML = `<span class="chev">▾</span><span class="league-name">${league.name}</span>${league.comingSoon ? '<span class="badge">Próx.</span>' : `<span class="badge">${league.teams.length}</span>`}`;
+    headBtn.innerHTML = `<span class="chev">▾</span><span>${league.name}</span>${league.comingSoon ? '<span class="badge">Próx.</span>' : `<span class="badge">${league.teams.length}</span>`}`;
     const body = document.createElement('div');
     body.className = 'league-body' + (league.collapsed ? ' collapsed' : '');
 

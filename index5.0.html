@@ -190,14 +190,6 @@
     grid-template-columns:repeat(auto-fill,minmax(168px,1fr));
     gap:14px;
   }
-  .subgroup{margin-top:16px;}
-  .subgroup:first-child{margin-top:10px;}
-  .subgroup-tag{
-    font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
-    color:var(--gold-dim);
-    margin-bottom:10px;
-    padding-left:2px;
-  }
   .kit-card{
     background:var(--card);
     border:1px solid var(--card-line);
@@ -370,8 +362,8 @@
      WELCOME / LANDING SCREEN
   ---------------------------------------------------------------- */
   .welcome{
-    max-width:980px;
-    padding:6px 0 44px;
+    max-width:920px;
+    padding:10px 0 40px;
   }
   .welcome-badge{
     display:inline-flex; align-items:center; gap:8px;
@@ -381,109 +373,22 @@
     background:rgba(212,167,44,0.08);
     border:1px solid var(--gold-dim);
     padding:6px 14px; border-radius:999px;
-    margin-bottom:16px;
+    margin-bottom:18px;
   }
-
-  /* --- Hero: logo + headline + big Instagram CTA --- */
-  .welcome-hero{
-    display:flex; align-items:center; gap:36px; flex-wrap:wrap;
-    padding:4px 0 34px;
-  }
-  .welcome-logo-link{
-    position:relative; flex:none;
-    display:inline-flex; align-items:center; justify-content:center;
-    width:190px; height:190px;
-    text-decoration:none;
-    transition:transform .3s ease;
-  }
-  .welcome-logo-link:hover{transform:scale(1.06) rotate(-2deg);}
-  .welcome-logo-link::before{
-    content:"";
-    position:absolute; inset:-16px;
-    border-radius:50%;
-    background:radial-gradient(circle, rgba(212,167,44,0.38), rgba(212,167,44,0) 72%);
-    animation:logoGlow 2.6s ease-in-out infinite;
-  }
-  @keyframes logoGlow{
-    0%,100%{ opacity:.5; transform:scale(1); }
-    50%{ opacity:1; transform:scale(1.1); }
-  }
-  .welcome-logo-link img{
-    position:relative; z-index:1;
-    width:100%; height:100%; object-fit:contain;
-    filter:drop-shadow(0 10px 26px rgba(0,0,0,.55));
-  }
-  .welcome-hero-text{flex:1; min-width:280px;}
-  .welcome-hero-text h2{
+  .welcome h2{
     margin:0 0 14px;
     font-size:clamp(26px,4vw,38px);
     font-weight:800;
     letter-spacing:-0.02em;
     line-height:1.12;
   }
-  .welcome-hero-text h2 span{color:var(--gold);}
-  .welcome-hero-text p.lead{
-    max-width:560px;
+  .welcome h2 span{color:var(--gold);}
+  .welcome > p.lead{
+    max-width:640px;
     color:var(--chalk-dim);
-    font-size:14.5px;
+    font-size:15px;
     line-height:1.65;
-    margin:0 0 22px;
-  }
-  .welcome-ig-big{
-    display:inline-flex; align-items:center; gap:12px;
-    background:linear-gradient(120deg,#feda75,#d4a72c 22%,#c13584 58%,#833ab4 82%,#5851db);
-    color:#20140a;
-    text-decoration:none;
-    font-size:14px; font-weight:800; letter-spacing:.01em;
-    padding:12px 22px 12px 12px;
-    border-radius:999px;
-    box-shadow:0 6px 22px rgba(193,53,132,.32);
-    animation:igPulse 2.4s ease-in-out infinite;
-    transition:transform .15s;
-  }
-  .welcome-ig-big:hover{transform:translateY(-2px) scale(1.02);}
-  @keyframes igPulse{
-    0%,100%{ box-shadow:0 6px 20px rgba(193,53,132,.28); }
-    50%{ box-shadow:0 8px 32px rgba(193,53,132,.55); }
-  }
-  .welcome-ig-big .ig-dot{
-    width:30px; height:30px; border-radius:50%; flex:none;
-    background:rgba(255,255,255,.9);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .welcome-ig-big .ig-dot svg{width:19px; height:19px;}
-
-  /* --- Callout cards: encourage DMs for missing shirts / orders --- */
-  .welcome-callouts{
-    display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
-    gap:16px; margin:0 0 38px;
-  }
-  .welcome-callout{
-    background:var(--card); border:1px solid var(--card-line); border-radius:14px;
-    padding:20px 20px 18px;
-    position:relative; overflow:hidden;
-    transition:border-color .15s, transform .15s;
-  }
-  .welcome-callout:hover{border-color:var(--gold-dim); transform:translateY(-2px);}
-  .welcome-callout::before{
-    content:""; position:absolute; top:-40%; right:-15%;
-    width:150px; height:150px; border-radius:50%;
-    background:radial-gradient(circle, rgba(212,167,44,.14), transparent 72%);
-    pointer-events:none;
-  }
-  .welcome-callout .emoji{font-size:23px; margin-bottom:10px; display:block;}
-  .welcome-callout h3{margin:0 0 8px; font-size:15px; font-weight:800; color:var(--chalk);}
-  .welcome-callout p{margin:0 0 14px; font-size:13px; line-height:1.6; color:var(--chalk-dim);}
-  .welcome-callout a{
-    display:inline-flex; align-items:center; gap:6px;
-    color:var(--gold); font-size:12.5px; font-weight:800;
-    text-decoration:none; letter-spacing:.02em;
-  }
-  .welcome-callout a:hover{text-decoration:underline;}
-
-  .welcome-section-title{
-    font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
-    color:var(--gold-dim); margin:0 0 14px;
+    margin:0 0 32px;
   }
   .welcome-steps{
     display:grid;
@@ -514,7 +419,7 @@
   }
   .welcome-modes{
     display:flex; flex-wrap:wrap; gap:8px;
-    margin:0;
+    margin:6px 0 34px;
   }
   .welcome-modes span{
     font-size:11px; font-weight:700; letter-spacing:.03em;
@@ -523,9 +428,33 @@
     padding:6px 13px; border-radius:6px;
   }
   .welcome-modes span b{color:var(--gold); font-weight:800;}
+  .welcome-footer{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:18px;
+    padding-top:26px;
+    border-top:1px solid var(--card-line);
+  }
+  .welcome-footer p{
+    margin:0; font-size:12.5px; color:var(--chalk-dim); max-width:420px; line-height:1.55;
+  }
+  .welcome-ig{
+    display:inline-flex; align-items:center; gap:10px;
+    background:var(--card);
+    border:1px solid var(--card-line);
+    color:var(--chalk);
+    text-decoration:none;
+    font-size:13.5px; font-weight:700;
+    padding:10px 18px 10px 12px;
+    border-radius:999px;
+    transition:border-color .15s, background .15s;
+    flex:none;
+  }
+  .welcome-ig:hover{border-color:var(--gold-dim); background:var(--card-line);}
+  .welcome-ig .ig-icon{width:26px; height:26px; flex:none;}
+  .welcome-ig .ig-text{display:flex; flex-direction:column; line-height:1.25;}
+  .welcome-ig .ig-text small{font-size:9.5px; color:var(--gold-dim); font-weight:600; letter-spacing:.04em; text-transform:uppercase;}
   @media (max-width: 640px){
-    .welcome-hero{flex-direction:column; align-items:flex-start; text-align:left;}
-    .welcome-logo-link{width:140px; height:140px;}
+    .welcome-footer{flex-direction:column; align-items:flex-start;}
   }
 </style>
 </head>
@@ -534,6 +463,9 @@
 <header>
   <p class="eyebrow">Catálogo & Archivo Histórico</p>
   <h1>KickStars <span>Catálogo</span></h1>
+  <p class="sub">Navegación por liga → equipo → temporada → equipación. Real Madrid, FC Barcelona y Atlético Madrid
+  ya están cargados con su histórico completo y varias fotos reales extraídas del archivo; el resto de clubes
+  de LaLiga esperan turno. Estructura preparada para sumar más ligas y selecciones nacionales más adelante.</p>
 
   <div class="search-wrap">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -2271,13 +2203,11 @@ const seleccionesTeams = [
 // ---------------------------------------------------------------------
 // PREMIER LEAGUE — los 20 clubes de la 2025-26 (estructura lista, a la espera de contenido)
 // ---------------------------------------------------------------------
-// Nota: todos los clubes de esta lista original de "próximamente" que ya tenían datos
-// reales más abajo en premierExtraTeams (con el mismo nombre u otro equivalente: Arsenal,
-// Liverpool, Sunderland, Chelsea, Fulham, Newcastle, Everton, Tottenham, West Ham, Burnley,
-// Wolves) se han quitado de aquí para no duplicar el botón. Solo queda Brentford FC, que
-// todavía no tiene fotos cargadas.
 const premierTeams = [
-  "Brentford FC"
+  "Arsenal FC","Manchester City","Manchester United","Aston Villa","Liverpool FC",
+  "Sunderland AFC","Crystal Palace","Chelsea FC",
+  "Fulham FC","Brentford FC","Nottingham Forest","Newcastle United","Everton FC",
+  "Tottenham Hotspur","West Ham United","Leeds United","Burnley FC","Wolverhampton Wanderers"
 ].map(t=>({name:t, data:null, ready:false}));
 
 // (RCD Espanyol, Celta de Vigo y CA Osasuna ya estaban listos; se han incorporado directamente abajo)
@@ -2685,7 +2615,7 @@ const premierExtraTeams = [
   {name:"Crystal Palace", data:crystalPalace, ready:true, colors:["#1B458F","#C4122E"]},
   {name:"Derby Country", data:derbyCounty, ready:true, colors:["#FFFFFF","#000000"]},
   {name:"Everton", data:everton, ready:true, colors:["#003399","#FFFFFF"]},
-  {name:"Fulham", data:fulham, ready:true, colors:["#FFFFFF","#000000"]},
+  {name:"Fullham", data:fulham, ready:true, colors:["#FFFFFF","#000000"]},
   {name:"Hull City", data:hullCity, ready:true, colors:["#F18A00","#000000"]},
   {name:"Leeds United", data:leedsUnited, ready:true, colors:["#FFFFFF","#1D428A"]},
   {name:"Leicester", data:leicester, ready:true, colors:["#003090","#FDBE11"]},
@@ -3288,27 +3218,6 @@ function extraCategory(name){
 }
 // Las 3 temporadas reales más recientes de un equipo (p.ej. 2025-26, 2024-25, 2023-24)
 // se consideran "Actuales"; el resto de temporadas reales son "Retro".
-// Sub-agrupa dentro de un mismo bloque de temporada (Actuales/Retro/Niños/Chándales/Mujer)
-// cuando conviven varios tipos distintos de equipación, para que no aparezcan todas
-// mezcladas en una sola rejilla sin distinción (p.ej. camiseta oficial + versión jugador
-// + manga larga + entrenamiento del Mundial 26).
-function kitSubgroup(name){
-  const n = normalize(name);
-  if(/^training\b/.test(n)) return 'Entrenamiento';
-  if(/^manga larga/.test(n)) return 'Manga Larga';
-  if(/^playerversion/.test(n)) return 'Versión Jugador';
-  if(/halfzip/.test(n)) return 'Chándal Halfzip';
-  if(/fullzip/.test(n)) return 'Chándal Fullzip';
-  if(/anthem/.test(n)) return 'Anthem';
-  if(/windbreak/.test(n)) return 'Windbreaker';
-  if(/sudadera|entrenamiento/.test(n)) return 'Sudadera Entrenamiento';
-  if(/\bbaby\b/.test(n)) return 'Baby';
-  if(/^kids\b|ni[nñ]os?/.test(n)) return 'Niños';
-  if(/\bcrop\b/.test(n)) return 'Women Crop';
-  if(/\btop\b/.test(n)) return 'Women Top';
-  if(/mujer|women/.test(n)) return 'Mujer';
-  return 'Equipación Oficial';
-}
 function getRecentSeasons(team){
   const real = [...new Set(team.data.filter(s=>isRealSeason(s.season)).map(s=>s.season))];
   real.sort((a,b)=> seasonStartYear(b)-seasonStartYear(a));
@@ -3437,25 +3346,8 @@ function renderTeam(team, filterText){
       const block = document.createElement('div');
       block.className = 'season-block';
       const tag = isRealSeason(season.season) ? `<span class="yr-badge">${season.season}</span> Temporada ${season.season}` : `<span class="yr-badge">★</span> ${season.season}`;
-
-      // Si dentro de la misma temporada conviven varios tipos de equipación
-      // (p.ej. camiseta oficial + versión jugador + manga larga + entrenamiento),
-      // las dividimos en subsecciones legibles en vez de una única rejilla mezclada.
-      const groups = new Map();
-      kits.forEach(k=>{
-        const g = kitSubgroup(k.name);
-        if(!groups.has(g)) groups.set(g, []);
-        groups.get(g).push(k);
-      });
-      let bodyHtml;
-      if(groups.size <= 1){
-        bodyHtml = `<div class="kit-grid">${buildKitGrid(kits)}</div>`;
-      } else {
-        bodyHtml = [...groups.entries()].map(([g,gkits])=>
-          `<div class="subgroup"><div class="subgroup-tag">${g}</div><div class="kit-grid">${buildKitGrid(gkits)}</div></div>`
-        ).join('');
-      }
-      block.innerHTML = `<div class="season-tag">${tag}</div>${bodyHtml}`;
+      block.innerHTML = `<div class="season-tag">${tag}</div>
+        <div class="kit-grid">${buildKitGrid(kits)}</div>`;
       main.appendChild(block);
     });
   }
@@ -3473,10 +3365,9 @@ function renderTeam(team, filterText){
 // WELCOME / LANDING SCREEN — shown before the customer has picked a team.
 // -----------------------------------------------------------------------
 function renderWelcome(){
-  const IG_URL = "https://www.instagram.com/kickstars.club";
-  const igIconSmall = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  const igIcon = `<svg class="ig-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="igGradSmall" x1="0%" y1="100%" x2="100%" y2="0%">
+      <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
         <stop offset="0%" stop-color="#feda75"/>
         <stop offset="25%" stop-color="#d4a72c"/>
         <stop offset="55%" stop-color="#c13584"/>
@@ -3484,45 +3375,19 @@ function renderWelcome(){
         <stop offset="100%" stop-color="#5851db"/>
       </linearGradient>
     </defs>
-    <rect x="2" y="2" width="20" height="20" rx="6" fill="none" stroke="url(#igGradSmall)" stroke-width="2.1"/>
-    <circle cx="12" cy="12" r="4.6" fill="none" stroke="url(#igGradSmall)" stroke-width="2.1"/>
-    <circle cx="17.1" cy="6.9" r="1.15" fill="url(#igGradSmall)"/>
+    <rect x="2" y="2" width="20" height="20" rx="6" fill="none" stroke="url(#igGrad)" stroke-width="2"/>
+    <circle cx="12" cy="12" r="4.6" fill="none" stroke="url(#igGrad)" stroke-width="2"/>
+    <circle cx="17.1" cy="6.9" r="1.15" fill="url(#igGrad)"/>
   </svg>`;
 
   main.innerHTML = `
     <div class="welcome">
-      <div class="welcome-hero">
-        <a class="welcome-logo-link" href="${IG_URL}" target="_blank" rel="noopener" title="Síguenos en Instagram · @kickstars.club">
-          <img src="images/kickstars-logo.png" alt="KickStars">
-        </a>
-        <div class="welcome-hero-text">
-          <p class="welcome-badge">Bienvenido a KickStars.club</p>
-          <h2>El <span>catálogo</span> completo de KickStars</h2>
-          <p class="lead">Aquí puedes ver, en fotos reales, todas las camisetas y equipaciones disponibles: ligas, selecciones
-          nacionales, temporadas actuales, retro y ediciones especiales. Elige un equipo en el menú lateral para empezar a mirar.</p>
-          <a class="welcome-ig-big" href="${IG_URL}" target="_blank" rel="noopener">
-            <span class="ig-dot">${igIconSmall}</span>
-            Síguenos y escríbenos · @kickstars.club
-          </a>
-        </div>
-      </div>
+      <p class="welcome-badge">Bienvenido a KickStars.club</p>
+      <h2>El <span>catálogo</span> completo de KickStars</h2>
+      <p class="lead">Aquí puedes ver, en fotos reales, todas las camisetas y equipaciones disponibles: ligas, selecciones
+      nacionales, temporadas actuales, retro y ediciones especiales. Elige un equipo en el menú lateral para empezar a
+      mirar, o usa el buscador para ir directo a lo que quieres.</p>
 
-      <div class="welcome-callouts">
-        <div class="welcome-callout">
-          <span class="emoji">🔍</span>
-          <h3>¿No encuentras la camiseta que buscas?</h3>
-          <p>Puede que la tengamos y todavía no esté subida al catálogo. No dudes y pregúntanos por Instagram, te contestamos enseguida.</p>
-          <a href="${IG_URL}" target="_blank" rel="noopener">Pregúntanos por Instagram →</a>
-        </div>
-        <div class="welcome-callout">
-          <span class="emoji">📦</span>
-          <h3>¿Listo para hacer tu pedido?</h3>
-          <p>Los pedidos se gestionan directamente por Instagram. Escríbenos con el equipo, la temporada y la talla, y te ayudamos con todo.</p>
-          <a href="${IG_URL}" target="_blank" rel="noopener">Escríbenos por Instagram →</a>
-        </div>
-      </div>
-
-      <p class="welcome-section-title">Cómo moverte por el catálogo</p>
       <div class="welcome-steps">
         <div class="welcome-step">
           <span class="step-num">1</span>
@@ -3554,29 +3419,29 @@ function renderWelcome(){
         <span><b>Niños</b></span>
         <span><b>Mujer</b></span>
       </div>
+
+      <div class="welcome-footer">
+        <p>¿Dudas, pedidos o disponibilidad? Escríbenos por Instagram, respondemos por ahí.</p>
+        <a class="welcome-ig" href="https://www.instagram.com/kickstars.club" target="_blank" rel="noopener">
+          ${igIcon}
+          <span class="ig-text"><small>Síguenos</small>@kickstars.club</span>
+        </a>
+      </div>
     </div>`;
 }
 
 // Given the typed tokens, find which team (if any) is being referred to,
 // so the search can "jump" to it (e.g. "atletico 23" -> Atlético Madrid).
-// Solo se tienen en cuenta tokens de 3+ letras para decidir el salto (para que escribir
-// una sola letra no salte de golpe a un equipo al azar mientras el usuario sigue escribiendo);
-// tokens cortos o numéricos (temporadas) se ignoran aquí y se siguen usando para filtrar
-// las equipaciones dentro del equipo ya seleccionado.
 function findTeamMatch(tokens){
-  const meaningful = tokens.filter(t=>t.length>=3);
-  if(meaningful.length===0) return null;
-  let best = null, bestScore = 0, bestLen = Infinity;
+  if(tokens.length===0) return null;
+  let best = null, bestScore = 0;
   allTeams().forEach(team=>{
     if(!team.ready) return;
     const words = normalize(team.name).split(/\s+/).filter(Boolean);
-    const score = meaningful.filter(t=> words.some(w=>w.startsWith(t) || t.startsWith(w))).length;
-    const nameLen = normalize(team.name).length;
-    if(score > bestScore || (score>0 && score===bestScore && nameLen<bestLen)){
-      bestScore = score; best = team; bestLen = nameLen;
-    }
+    const score = tokens.filter(t=> words.some(w=>w.startsWith(t) || t.startsWith(w))).length;
+    if(score > bestScore){ bestScore = score; best = team; }
   });
-  return bestScore>0 ? best : null;
+  return best;
 }
 
 function allTeams(){
@@ -3600,9 +3465,7 @@ function buildSidebar(){
     if(league.comingSoon){
       body.innerHTML = `<div class="no-match" style="padding:4px 12px 10px;">Próximamente</div>`;
     } else {
-      // Orden alfabético dentro de la liga/selecciones, para que sea fácil de encontrar un equipo.
-      const sortedTeams = [...league.teams].sort((a,b)=> normalize(a.name).localeCompare(normalize(b.name)));
-      sortedTeams.forEach((team, i)=>{
+      league.teams.forEach((team, i)=>{
         const btn = document.createElement('button');
         btn.className = 'team-btn' + (!team.ready?' locked':'');
         btn.dataset.name = normalize(team.name);
@@ -3710,15 +3573,10 @@ searchInput.addEventListener('input', ()=>{
     activateTeamButton(matchedTeam);
   }
 
-  // filter sidebar team list by name (accent-insensitive) — requiere que TODAS las
-  // palabras escritas aparezcan en el nombre, así "real madrid" muestra solo ese equipo
-  // en vez de todos los "real ..." y todos los "... madrid". Los números (temporada, p.ej.
-  // "atletico 23") se ignoran para este filtro de nombre, ya que no forman parte del
-  // nombre del equipo — solo se usan para filtrar equipaciones dentro del equipo.
-  const nameTokens = tokens.filter(t=>!/^\d+$/.test(t));
+  // filter sidebar team list by name (accent-insensitive)
   let visibleCount = 0;
   document.querySelectorAll('.team-btn').forEach(btn=>{
-    const match = nameTokens.length===0 || nameTokens.every(t=>btn.dataset.name.includes(t));
+    const match = tokens.length===0 || tokens.some(t=>btn.dataset.name.includes(t));
     btn.classList.toggle('hidden', !match);
     if(match) visibleCount++;
   });

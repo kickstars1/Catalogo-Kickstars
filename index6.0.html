@@ -429,7 +429,6 @@
     line-height:1.65;
     margin:0 0 22px;
   }
-  .welcome-cta-center{display:flex; justify-content:center; margin-top:4px;}
   .welcome-ig-big{
     display:inline-flex; align-items:center; gap:12px;
     background:linear-gradient(120deg,#feda75,#d4a72c 22%,#c13584 58%,#833ab4 82%,#5851db);
@@ -3147,12 +3146,12 @@ const leagues = [
   {name:"Ligue 1", collapsed:true, comingSoon:false, teams:ligue1Teams2},
   {name:"Liga Escocesa", collapsed:true, comingSoon:false, teams:scottishTeams},
   {name:"Superliga Turca", collapsed:true, comingSoon:false, teams:turkishTeams},
-  {name:"Primeira Liga", collapsed:true, comingSoon:false, teams:portugueseTeams},
+  {name:"Primeira Liga (Portugal)", collapsed:true, comingSoon:false, teams:portugueseTeams},
   {name:"Eredivisie", collapsed:true, comingSoon:false, teams:dutchTeams},
   {name:"Liga Argentina", collapsed:true, comingSoon:false, teams:argentineTeams},
   {name:"Liga Brasileña", collapsed:true, comingSoon:false, teams:brazilianTeams},
   {name:"Otros Clubes de América", collapsed:true, comingSoon:false, teams:latamTeams},
-  {name:"Más Clubes de LaLiga", collapsed:true, comingSoon:false, teams:spanishExtraTeams},
+  {name:"Más Clubes de LaLiga (histórico)", collapsed:true, comingSoon:false, teams:spanishExtraTeams},
   {name:"Otros Clubes", collapsed:true, comingSoon:false, teams:otherClubsTeams},
   {name:"Liga Árabe", collapsed:true, comingSoon:false, teams:saudiTeams},
   {name:"MLS", collapsed:true, comingSoon:false, teams:mlsTeams},
@@ -3498,15 +3497,13 @@ function renderWelcome(){
         </a>
         <div class="welcome-hero-text">
           <p class="welcome-badge">Bienvenido a KickStars.club</p>
-          <h2>El <span>catálogo</span> de KickStars</h2>
+          <h2>El <span>catálogo</span> completo de KickStars</h2>
           <p class="lead">Aquí puedes ver, en fotos reales, todas las camisetas y equipaciones disponibles: ligas, selecciones
           nacionales, temporadas actuales, retro y ediciones especiales. Elige un equipo en el menú lateral para empezar a mirar.</p>
-          <div class="welcome-cta-center">
-            <a class="welcome-ig-big" href="${IG_URL}" target="_blank" rel="noopener">
-              <span class="ig-dot">${igIconSmall}</span>
-              Síguenos y escríbenos · @kickstars.club
-            </a>
-          </div>
+          <a class="welcome-ig-big" href="${IG_URL}" target="_blank" rel="noopener">
+            <span class="ig-dot">${igIconSmall}</span>
+            Síguenos y escríbenos · @kickstars.club
+          </a>
         </div>
       </div>
 

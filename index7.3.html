@@ -2100,10 +2100,6 @@ function isOfficialKit(name){
   if(/^(\d+\s*[ºo°]?\.?\s*)?(portero|goalkeeper)(\s+\d{2,4}-\d{2,4})?$/.test(n)) return true;
   if(/^playerversion\s+(home|away|third|fourth|goalkeeper)\b/.test(n)) return true;
   if(/^manga larga\s+(home|away|third|fourth|goalkeeper)\b/.test(n)) return true;
-  // Equipación base de selecciones para el Mundial 26 (Home/Away/Third/Goalkeeper Mundial 26):
-  // son camisetas de partido normales, deben contar como oficiales igual que "1º Kit"/"Local".
-  if(/^(home|away|third|fourth)\s+mundial\s+\d{2,4}(\s*\(\d+\))?$/.test(n)) return true;
-  if(/^goalkeeper\s+mundial\s+\d{2,4}(\s*\(\d+\))?$/.test(n)) return true;
   return false;
 }
 // Orden dentro de cada temporada: primero 1ª/2ª/3ª/4ª equipación, luego portero,
